@@ -28,6 +28,27 @@
 #include "internal.h"
 #include "mount.h"
 
+#include <linux/string.h>
+#include <linux/fdtable.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/filelock.h>
+#include <linux/security.h>
+#include <linux/cred.h>
+#include <linux/eventpoll.h>
+#include <linux/rcupdate.h>
+#include <linux/capability.h>
+#include <linux/cdev.h>
+#include <linux/fsnotify.h>
+#include <linux/sysctl.h>
+#include <linux/percpu_counter.h>
+#include <linux/percpu.h>
+#include <linux/task_work.h>
+#include <linux/swap.h>
+#include <linux/kmemleak.h>
+
+#include <linux/atomic.h>
+
 #define __getname()     kmem_cache_alloc(names_cachep, GFP_KERNEL)
 #define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
 #define ND_ROOT_PRESET 1
@@ -39,6 +60,12 @@
     do_read_seqcount_retry(seqprop_ptr(s), start)
 
 enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};
+
+static struct files_stat_struct files_stat = {
+    .max_files = NR_FILE
+};
+
+static struct kmem_cache *filp_cachep __read_mostly;
 
 struct nameidata {
     struct path path;
@@ -110,6 +137,10 @@ extern int mnt_want_write(struct vfsmount *m);
 extern struct dentry *atomic_open(struct nameidata *nd, struct dentry *dentry, struct file *file, int open_flag, umode_t mode);
 extern int may_o_create(struct mnt_idmap *idmap, const struct path *dir, struct dentry *dentry, umode_t mode);
 extern inline umode_t vfs_prepare_mode(struct mnt_idmap *idmap, const struct inode *dir, umode_t mode, umode_t mask_perms, umode_t type);
+extern long get_nr_files(void);
+extern int init_file(struct file *f, int flags, const struct cred *cred);
+extern struct percpu_counter nr_files;
+extern struct kmem_cache *filp_cachep;
 
 static inline bool is_ext4_inode(struct inode *inode)
 {
@@ -163,10 +194,11 @@ static const char *my_path_init(struct nameidata *nd, unsigned flags)
 		error = nd_jump_root(nd);
 		if (unlikely(error))
 			return ERR_PTR(error);
-		return s;
+        return s;
 	}
 
 	if (nd->dfd == AT_FDCWD) {
+        printk("[%s]: nd->dfd(equal to AT_FDCWD)= %d", __func__, nd->dfd);
         if (flags & LOOKUP_RCU) {
             struct fs_struct *fs = current->fs;
             unsigned seq;
@@ -176,6 +208,22 @@ static const char *my_path_init(struct nameidata *nd, unsigned flags)
                 nd->path = fs->pwd;
                 nd->inode = nd->path.dentry->d_inode;
                 nd->seq = __read_seqcount_begin(&nd->path.dentry->d_seq);
+
+                // test code start
+                char *path_buf = kmalloc(PATH_MAX, GFP_ATOMIC);
+                if (path_buf) {
+                    char *path_str = dentry_path_raw(fs->pwd.dentry, path_buf, PATH_MAX);
+                    if (!IS_ERR(path_str)) {
+                        printk("[%s]: fs->pwd= %s\n", __func__, path_str);
+                    } else {
+                        printk("[%s]: fs->pwd= <error getting path>\n", __func__);
+                    }
+                    kfree(path_buf);
+                } else {
+                    printk("[%s]: path_buf is null, something went wrong!", __func__);
+                }
+                // test code end
+
             } while (read_seqcount_retry(&fs->seq, seq));
         } else {
             get_fs_pwd(current->fs, &nd->path);
@@ -466,6 +514,14 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
 {
     int depth = 0; // depth <= nd->depth
     int err;
+
+    // === test code begin ===
+    if(name) {
+        printk("[%s]: name=%s\n", __func__, name);
+    } else {
+        printk("[%s]: name is null", __func__);
+    }
+    // === test code end ===
 
     nd->last_type = LAST_ROOT;
     nd->flags |= LOOKUP_PARENT;
@@ -883,11 +939,100 @@ finish_lookup:
     return res;
 }
 
+static long my_get_nr_files(void)
+{
+    return percpu_counter_read_positive(&nr_files);
+}
+
+static int my_init_file(struct file *f, int flags, const struct cred *cred)
+{
+    int error;
+
+    f->f_cred = get_cred(cred);
+    error = security_file_alloc(f);
+    if (unlikely(error)) {
+        put_cred(f->f_cred);
+        return error;
+    }
+
+    atomic_long_set(&f->f_count, 1);
+    rwlock_init(&f->f_owner.lock);
+    spin_lock_init(&f->f_lock);
+    mutex_init(&f->f_pos_lock);
+    f->f_flags = flags;
+    f->f_mode = OPEN_FMODE(flags);
+    /* f->f_version: 0 */
+
+    return 0;
+}
+
+struct file *my_alloc_empty_file(int flags, const struct cred *cred)
+{
+    static long old_max;
+    struct file *f;
+    int error;
+    
+    printk("[%s]: start my_alloc_empty_file()", __func__);
+
+    /*
+     * Privileged users can go above max_files
+     */
+    if (get_nr_files() >= files_stat.max_files && !capable(CAP_SYS_ADMIN)) {
+        printk("[%s]: 1", __func__);
+        /*
+         * percpu_counters are inaccurate.  Do an expensive check before
+         * we go and fail.
+         */
+        if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files) {
+            // percpu_counter_sum_positive() is defined in percpu_counter.h
+            printk("[%s]: 2", __func__);
+            goto over;
+        }
+    }
+    printk("[%s]: 3", __func__);
+
+    f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
+    printk("[%s]: 4", __func__);
+    if (unlikely(!f)) {
+        printk("[%s]: 5", __func__);
+        return ERR_PTR(-ENOMEM);
+    }
+
+    printk("[%s]: 6", __func__);
+    error = init_file(f, flags, cred);
+    printk("[%s]: 7", __func__);
+    if (unlikely(error)) {
+        printk("[%s]: 8", __func__);
+        kmem_cache_free(filp_cachep, f);
+        printk("[%s]: 9", __func__);
+        return ERR_PTR(error);
+    }
+    printk("[%s]: 10", __func__);
+
+    percpu_counter_inc(&nr_files);
+
+    printk("[%s]: 11", __func__);
+
+    return f;
+
+over:
+    /* Ran out of filps - report that */
+    if (get_nr_files() > old_max) {
+        printk("[%s]: 12", __func__);
+        pr_info("VFS: file-max limit %lu reached\n", get_max_files());
+        printk("[%s]: 13", __func__);
+        old_max = get_nr_files();
+        printk("[%s]: 14", __func__);
+    }
+    printk("[%s]: 15", __func__);
+    return ERR_PTR(-ENFILE);
+}
+
 // obtains the file object corresponding to the incoming pathname
 // searches the file along a path and return the file
 struct file* my_path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)
 {
-    printk("[%s]: my_path_openat()\n", __func__);
+    printk("[%s]: start my_path_openat()\n", __func__);
 	struct file *file;
 	int error;
 

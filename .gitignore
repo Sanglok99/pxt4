@@ -1,0 +1,12 @@
+cscope.out
+
+*.o
+*.ko
+*.mod
+*.mod.*
+*.symvers
+*.order
+*.cmd
+*.d
+cscope.out
+tags
