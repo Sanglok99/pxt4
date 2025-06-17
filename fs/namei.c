@@ -61,11 +61,10 @@
 
 enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};
 
+/* sysctl tunables... */
 static struct files_stat_struct files_stat = {
     .max_files = NR_FILE
 };
-
-static struct kmem_cache *filp_cachep __read_mostly;
 
 struct nameidata {
     struct path path;
@@ -991,6 +990,9 @@ struct file *my_alloc_empty_file(int flags, const struct cred *cred)
     }
     printk("[%s]: 3", __func__);
 
+    // TODO: add get_nr_files() NULL check
+    printk("[%s]: get_nr_files(): %ld", __func__, get_nr_files());
+
     f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
     printk("[%s]: 4", __func__);
     if (unlikely(!f)) {
@@ -1036,7 +1038,7 @@ struct file* my_path_openat(struct nameidata *nd, const struct open_flags *op, u
 	struct file *file;
 	int error;
 
-	file = alloc_empty_file(op->open_flag, current_cred()); // allocate memory to the struct file
+	file = my_alloc_empty_file(op->open_flag, current_cred()); // allocate memory to the struct file
 	if (IS_ERR(file))
 		return file;
 
