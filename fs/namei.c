@@ -140,6 +140,9 @@ extern long get_nr_files(void);
 extern int init_file(struct file *f, int flags, const struct cred *cred);
 extern struct percpu_counter nr_files;
 extern struct kmem_cache *filp_cachep;
+extern inline struct hlist_bl_head *d_hash(unsigned int hash);
+extern inline int dentry_cmp(const struct dentry *dentry, const unsigned char *ct, unsigned tcount);
+extern unsigned int d_hash_shift __read_mostly;
 
 static inline bool is_ext4_inode(struct inode *inode)
 {
@@ -201,28 +204,20 @@ static const char *my_path_init(struct nameidata *nd, unsigned flags)
         if (flags & LOOKUP_RCU) {
             struct fs_struct *fs = current->fs;
             unsigned seq;
+			
+			if(fs && fs->pwd.dentry->d_name.name) {
+            	printk("[%s]: fs->pwd: %s", __func__, fs->pwd.dentry->d_name.name);
+            } else if(!fs) {
+                printk("[%s]: fs is null", __func__);
+            } else {
+                printk("[%s]: fs->pwd is null", __func__);
+            }
 
             do {
                 seq = read_seqcount_begin(&fs->seq);
                 nd->path = fs->pwd;
                 nd->inode = nd->path.dentry->d_inode;
                 nd->seq = __read_seqcount_begin(&nd->path.dentry->d_seq);
-
-                // test code start
-                char *path_buf = kmalloc(PATH_MAX, GFP_ATOMIC);
-                if (path_buf) {
-                    char *path_str = dentry_path_raw(fs->pwd.dentry, path_buf, PATH_MAX);
-                    if (!IS_ERR(path_str)) {
-                        printk("[%s]: fs->pwd= %s\n", __func__, path_str);
-                    } else {
-                        printk("[%s]: fs->pwd= <error getting path>\n", __func__);
-                    }
-                    kfree(path_buf);
-                } else {
-                    printk("[%s]: path_buf is null, something went wrong!", __func__);
-                }
-                // test code end
-
             } while (read_seqcount_retry(&fs->seq, seq));
         } else {
             get_fs_pwd(current->fs, &nd->path);
@@ -370,6 +365,126 @@ out:
     return false;
 }
 
+static noinline struct dentry *__my_d_lookup_rcu_op_compare(
+    const struct dentry *parent,
+    const struct qstr *name,
+    unsigned *seqp)
+{
+    u64 hashlen = name->hash_len;
+    struct hlist_bl_head *b = d_hash(hashlen_hash(hashlen));
+    struct hlist_bl_node *node;
+    struct dentry *dentry;
+
+    hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
+        int tlen;
+        const char *tname;
+        unsigned seq;
+
+seqretry:
+        seq = raw_seqcount_begin(&dentry->d_seq);
+        if (dentry->d_parent != parent)
+            continue;
+        if (d_unhashed(dentry))
+            continue;
+        if (dentry->d_name.hash != hashlen_hash(hashlen))
+            continue;
+        tlen = dentry->d_name.len;
+        tname = dentry->d_name.name;
+        /* we want a consistent (name,len) pair */
+        if (read_seqcount_retry(&dentry->d_seq, seq)) {
+            cpu_relax();
+            goto seqretry;
+        }
+        if (parent->d_op->d_compare(dentry, tlen, tname, name) != 0)
+            continue;
+        *seqp = seq;
+        return dentry;
+    }
+    return NULL;
+}
+
+struct dentry *__my_d_lookup_rcu(const struct dentry *parent,
+                const struct qstr *name,
+                unsigned *seqp)
+{
+    u64 hashlen = name->hash_len;
+    const unsigned char *str = name->name;
+    struct hlist_bl_head *b = d_hash(hashlen_hash(hashlen));
+    struct hlist_bl_node *node;
+    struct dentry *dentry;
+
+    // === test code begin ===
+    printk("[%s]: d_hash_shift= %u\n", __func__, d_hash_shift);
+    printk("[%s]: hashlen_hash()'s result= %u\n", __func__, hashlen_hash(hashlen));
+    // === test code end ===
+
+    /*
+     * Note: There is significant duplication with __d_lookup_rcu which is
+     * required to prevent single threaded performance regressions
+     * especially on architectures where smp_rmb (in seqcounts) are costly.
+     * Keep the two functions in sync.
+     */
+
+    if (unlikely(parent->d_flags & DCACHE_OP_COMPARE))
+        return __my_d_lookup_rcu_op_compare(parent, name, seqp);
+
+    /*
+     * The hash list is protected using RCU.
+     *
+     * Carefully use d_seq when comparing a candidate dentry, to avoid
+     * races with d_move().
+     *
+     * It is possible that concurrent renames can mess up our list
+     * walk here and result in missing our dentry, resulting in the
+     * false-negative result. d_lookup() protects against concurrent
+     * renames using rename_lock seqlock.
+     *
+     * See Documentation/filesystems/path-lookup.txt for more details.
+     */
+    hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
+        unsigned seq;
+
+        /*
+         * The dentry sequence count protects us from concurrent
+         * renames, and thus protects parent and name fields.
+         *
+         * The caller must perform a seqcount check in order
+         * to do anything useful with the returned dentry.
+         *
+         * NOTE! We do a "raw" seqcount_begin here. That means that
+         * we don't wait for the sequence count to stabilize if it
+         * is in the middle of a sequence change. If we do the slow
+         * dentry compare, we will do seqretries until it is stable,
+         * and if we end up with a successful lookup, we actually
+         * want to exit RCU lookup anyway.
+         *
+         * Note that raw_seqcount_begin still *does* smp_rmb(), so
+         * we are still guaranteed NUL-termination of ->d_name.name.
+         */
+        seq = raw_seqcount_begin(&dentry->d_seq);
+        if (dentry->d_parent != parent)
+            continue;
+        if (d_unhashed(dentry))
+            continue;
+        if (dentry->d_name.hash_len != hashlen)
+            continue;
+        if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
+            continue;
+        *seqp = seq;
+
+        // === test code begin ===
+        if(dentry){
+            printk("[%s]: dentry: %s", __func__, dentry->d_name.name);
+        } else {
+            printk("[%s]: dentry is null", __func__);
+        }
+        // === test code end ===
+
+        return dentry;
+    }
+    return NULL;
+}
+
 static struct dentry *my_lookup_fast(struct nameidata *nd)
 {
     struct dentry *dentry, *parent = nd->path.dentry;
@@ -383,7 +498,7 @@ static struct dentry *my_lookup_fast(struct nameidata *nd)
     if (nd->flags & LOOKUP_RCU) {
 
         if(parent && parent->d_name.name){
-            printk("[%s]: parent=%s\n", __func__, parent->d_name.name);
+            printk("[%s]: parent= %s\n", __func__, parent->d_name.name);
         } else if(!parent){
             printk("[%s]: parent is null", __func__);
         } else {
@@ -391,7 +506,7 @@ static struct dentry *my_lookup_fast(struct nameidata *nd)
         }
 
         if(nd && nd->last.hash_len){
-            printk("[%s]: nd->last.hash_len=%u\n", __func__, hashlen_len(nd->last.hash_len));
+            printk("[%s]: nd->last.hash_len= %u\n", __func__, hashlen_len(nd->last.hash_len));
         } else if(!nd){
             printk("[%s]: nd is null", __func__);
         } else {
@@ -399,14 +514,14 @@ static struct dentry *my_lookup_fast(struct nameidata *nd)
         }
 
         if(nd && nd->next_seq){
-            printk("[%s]: nd->next_seq=%u\n", __func__, nd->next_seq);
+            printk("[%s]: nd->next_seq= %u\n", __func__, nd->next_seq);
         } else if(!nd){
             printk("[%s]: nd is null", __func__);
         } else {
             printk("[%s]: nd->next_seq is null", __func__);
         }
 
-        dentry = __d_lookup_rcu(parent, &nd->last, &nd->next_seq);
+        dentry = __my_d_lookup_rcu(parent, &nd->last, &nd->next_seq);
         if (unlikely(!dentry)) {
             if (!my_try_to_unlazy(nd))
                 return ERR_PTR(-ECHILD);
@@ -450,26 +565,45 @@ static const char *my_step_into(struct nameidata *nd, int flags,
     struct inode *inode;
     int err = handle_mounts(nd, dentry, &path);
 
+    printk("[%s]: 1\n", __func__); // test code
+
     if (err < 0)
         return ERR_PTR(err);
     inode = path.dentry->d_inode;
     if (likely(!d_is_symlink(path.dentry)) ||
        ((flags & WALK_TRAILING) && !(nd->flags & LOOKUP_FOLLOW)) ||
        (flags & WALK_NOFOLLOW)) {
+
+        printk("[%s]: 2\n", __func__); // test code
+
         /* not a symlink or should not follow */
         if (nd->flags & LOOKUP_RCU) {
-            if (read_seqcount_retry(&path.dentry->d_seq, nd->next_seq))
+            printk("[%s]: 3\n", __func__); // test code
+            if (read_seqcount_retry(&path.dentry->d_seq, nd->next_seq)) {
+                printk("[%s]: 4\n", __func__); // test code
                 return ERR_PTR(-ECHILD);
-            if (unlikely(!inode))
+            }
+            if (unlikely(!inode)) {
+                printk("[%s]: 5\n", __func__); // test code
                 return ERR_PTR(-ENOENT);
+            }
         } else {
             dput(nd->path.dentry);
-            if (nd->path.mnt != path.mnt)
+            printk("[%s]: 6\n", __func__); // test code
+            if (nd->path.mnt != path.mnt) {
+                printk("[%s]: 7\n", __func__); // test code
                 mntput(nd->path.mnt);
+            }
         }
+
+        printk("[%s]: 8\n", __func__); // test code
+        
         nd->path = path;
         nd->inode = inode;
         nd->seq = nd->next_seq;
+        
+        printk("[%s]: nd->path.dentry= %s\n", __func__, nd->path.dentry->d_name.name); // test code 
+
         return NULL;
     }
     if (nd->flags & LOOKUP_RCU) {
@@ -491,6 +625,29 @@ static const char *my_walk_component(struct nameidata *nd, int flags)
      * to be able to know about the current root directory and
      * parent relationships.
      */
+
+	 // === test code begin ===
+    if(nd) {
+		if(nd->path.dentry) {
+        	printk("[%s]: nd->path.dentry= %s", __func__, nd->path.dentry->d_name.name);
+		} else {
+			printk("[%s]: nd->path.dentry is null)", __func__);
+		}
+		if(nd->last.hash_len) {
+            printk("[%s]: nd->last.hash_len= %llu\n", __func__, (long long unsigned int)nd->last.hash_len);
+        } else {
+            printk("[%s]: nd->last.hash_len is null", __func__);
+        }
+		if(nd->last.name) {
+            printk("[%s]: nd->last.name= %s", __func__, nd->last.name);
+        } else {
+            printk("[%s]: nd->last.name is null", __func__);
+        }
+    } else {
+        printk("[%s]: nd is null", __func__);
+	}
+    // === test code end ===
+
     if (unlikely(nd->last_type != LAST_NORM)) {
         if (!(flags & WALK_MORE) && nd->depth)
             put_link(nd);
@@ -514,11 +671,21 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
     int depth = 0; // depth <= nd->depth
     int err;
 
+    int test_cnt = 0; // test code
+
     // === test code begin ===
     if(name) {
-        printk("[%s]: name=%s\n", __func__, name);
+        printk("[%s]: name= %s\n", __func__, name);
     } else {
         printk("[%s]: name is null", __func__);
+    }
+
+    if(nd && nd->path.dentry) {
+        printk("[%s]: nd->path.dentry: %s", __func__, nd->path.dentry->d_name.name);
+    } else if(!nd) {
+        printk("[%s]: nd is null", __func__);
+    } else {
+        printk("[%s]: nd->path.dentry is null", __func__);
     }
     // === test code end ===
 
@@ -532,6 +699,8 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         nd->dir_mode = 0; // short-circuit the 'hardening' idiocy
         return 0;
     }
+        
+    printk("[%s]: start for loop", __func__);
 
     /* At this point we know we have a real path component. */
     for(;;) {
@@ -540,12 +709,22 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         u64 hash_len;
         int type;
 
+        // === test code begin ===
+        // print nd->path.dentry and name
+        test_cnt++;
+
+        printk("[%s]: (%dst iter)nd->path.dentry: %s", __func__, test_cnt, nd->path.dentry->d_name.name);
+        printk("[%s]: (%dst iter)name= %s", __func__, test_cnt, name);
+        // === test code end ===
+
         idmap = mnt_idmap(nd->path.mnt);
         err = may_lookup(idmap, nd);
         if (err)
             return err;
 
         hash_len = hash_name(nd->path.dentry, name);
+
+        printk("[%s]: (%dst iter)hash_len= %llu", __func__, test_cnt, hash_len);
 
         type = LAST_NORM;
         if (name[0] == '.') switch (hashlen_len(hash_len)) {
@@ -570,14 +749,14 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
                 name = this.name;
             }
         }
-
-        nd->last.hash_len = hash_len;
         
+        nd->last.hash_len = hash_len;
+
         if(nd) {
             if(nd->last.hash_len) {
-                printk("[%s]: nd->last.hash_len=%llu\n", __func__, (long long unsigned int)nd->last.hash_len);
+                printk("[%s]: (%dst iter)nd->last.hash_len= %llu\n", __func__, test_cnt, (long long unsigned int)nd->last.hash_len);
             } else {
-                printk("[%s]: nd->last is null", __func__);
+                printk("[%s]: (%dst iter)nd->last.hash_len is null", __func__, test_cnt);
             }
         } else {
             printk("[%s]: nd is null", __func__);
@@ -587,9 +766,9 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
 
         if(nd) {
             if(nd->last.name) {
-                printk("[%s]: nd->last.name=%s", __func__, nd->last.name);
+                printk("[%s]: (%dst iter)nd->last.name= %s", __func__, test_cnt, nd->last.name);
             } else {
-                printk("[%s]: nd->last is null", __func__);
+                printk("[%s]: (%dst iter)nd->last.name is null", __func__, test_cnt);
             }
         } else {
             printk("[%s]: nd is null", __func__);
@@ -598,16 +777,21 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         nd->last_type = type;
 
         if(nd) {
-            if(nd->last_type) {
-                printk("[%s]: nd->last_type=%d", __func__, nd->last_type);
-            } else {
-                printk("[%s]: nd->last is null", __func__);
-            }
+            printk("[%s]: (%dst iter)nd->last_type= %d", __func__, test_cnt, nd->last_type);
         } else {
             printk("[%s]: nd is null", __func__);
         }
 
         name += hashlen_len(hash_len);
+
+        // === test code begin === 
+        if(!*name) {
+            printk("[%s]: (after hashlen_len)name is empty", __func__);
+        } else {
+            printk("[%s]: (after hashlen_len)name= %s", __func__, name);
+        }
+        // === test code end ===
+
         if (!*name)
             goto OK;
         /*
@@ -617,6 +801,15 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         do {
             name++;
         } while (unlikely(*name == '/'));
+
+		// === test code begin ===
+        if(!*name) {
+            printk("[%s]: (after do while '/' removal)name is empty", __func__);
+        } else {
+            printk("[%s]: (after do while '/' removal)name= %s", __func__, name);
+        }
+        // === test code end ===
+
         if (unlikely(!*name)) {
 OK:
             /* pathname or trailing symlink, done */
@@ -671,7 +864,7 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
     dentry = d_lookup(dir, &nd->last);
 
     if(dentry && dentry->d_name.name){
-        printk("[%s]: dentry(d_lookup()'s result)=%s\n", __func__, dentry->d_name.name);
+        printk("[%s]: dentry(d_lookup()'s result)= %s\n", __func__, dentry->d_name.name);
     } else if(!dentry) {
         printk("[%s]: dentry(d_lookup()'s result) is null", __func__);
     } else {
@@ -938,33 +1131,6 @@ finish_lookup:
     return res;
 }
 
-static long my_get_nr_files(void)
-{
-    return percpu_counter_read_positive(&nr_files);
-}
-
-static int my_init_file(struct file *f, int flags, const struct cred *cred)
-{
-    int error;
-
-    f->f_cred = get_cred(cred);
-    error = security_file_alloc(f);
-    if (unlikely(error)) {
-        put_cred(f->f_cred);
-        return error;
-    }
-
-    atomic_long_set(&f->f_count, 1);
-    rwlock_init(&f->f_owner.lock);
-    spin_lock_init(&f->f_lock);
-    mutex_init(&f->f_pos_lock);
-    f->f_flags = flags;
-    f->f_mode = OPEN_FMODE(flags);
-    /* f->f_version: 0 */
-
-    return 0;
-}
-
 struct file *my_alloc_empty_file(int flags, const struct cred *cred)
 {
     static long old_max;
@@ -990,8 +1156,10 @@ struct file *my_alloc_empty_file(int flags, const struct cred *cred)
     }
     printk("[%s]: 3", __func__);
 
-    // TODO: add get_nr_files() NULL check
+    printk("[%s]: files_stat.max_files: %lu", __func__, files_stat.max_files);
+
     printk("[%s]: get_nr_files(): %ld", __func__, get_nr_files());
+    printk("[%s]: percpu_counter_sum_positive(&nr_files): %lld", __func__, percpu_counter_sum_positive(&nr_files));
 
     f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
     printk("[%s]: 4", __func__);

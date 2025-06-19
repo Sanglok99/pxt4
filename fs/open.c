@@ -110,7 +110,7 @@ struct open_how my_build_open_how(int flags, umode_t mode)
 
 long my_do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 {
-    printk("[%s]: start module\n", __func__);
+    printk("[%s]: ============ start module ============\n", __func__);
     struct open_how how = my_build_open_how(flags, mode);
     return my_do_sys_openat2(dfd, filename, &how);
 }
