@@ -874,6 +874,25 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
     for (;;) {
         if (!dentry) {
             dentry = d_alloc_parallel(dir, &nd->last, &wq);
+			
+			// === test code begin ===
+           	if(dentry && dentry->d_name.name) {
+        		printk("[%s]: dentry(d_alloc_parallel()'s result)= %s\n", __func__, dentry->d_name.name);
+    		} else if(!dentry) {
+        		printk("[%s]: dentry(d_alloc_parallel()'s result) is null", __func__);
+    		} else {
+        		printk("[%s]: dentry->d_name.name is null(d_alloc_parallel()'s result)", __func__);
+    		}
+
+			if(dentry && dentry->d_inode) {
+				printk("[%s]: dentry->d_inode exists!(d_alloc_parallel()'s result)", __func__);
+			} else if(!dentry) {
+                printk("[%s]: dentry(d_alloc_parallel()'s result) is null", __func__);
+            } else {
+                printk("[%s]: dentry->d_inode is null(d_alloc_parallel()'s result)", __func__);
+            }
+			// === test code end ===
+
             if (IS_ERR(dentry))
                 return dentry;
         }
@@ -969,17 +988,10 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
             printk("[%s]: (%pS)\n", __func__, dir_inode->i_op->create);
         }
 
+		// ================================ pxt4 entry point ================================
         error = dir_inode->i_op->create(idmap, dir_inode, dentry, mode, open_flag & O_EXCL);
+		// ==================================================================================
 
-
-		// ================= customized ext4 entry point ==========================
-//		if (!is_ext4_inode(dir_inode)) {
-//    		error = -EACCES;
-//    		goto out_dput;
-//		}
-//
-//		error = my_ext4_create(idmap, dir_inode, dentry, mode, open_flag & O_EXCL);
-		// ========================================================================
         if (error)
             goto out_dput;
     }
@@ -1072,19 +1084,21 @@ const char *my_open_last_lookups(struct nameidata *nd,
         inode_lock_shared(dir->d_inode);
     dentry = my_lookup_open(nd, file, op, got_write);
 
+    // === test code begin ===
     if(nd){
 		if (IS_ERR(dentry)) {
-    		printk("[%s]: dentry is ERR_PTR\n", __func__);
+    		printk("[%s]: dentry(my_lookup_open()'s result) is ERR_PTR\n", __func__);
 		} else if (!dentry) {
-    		printk("[%s]: dentry is NULL\n", __func__);
+    		printk("[%s]: dentry(my_lookup_open()'s result) is NULL\n", __func__);
 		} else if (!dentry->d_name.name) {
-    		printk("[%s]: dentry->d_name.name is NULL\n", __func__);
+    		printk("[%s]: dentry->d_name.name is NULL(my_lookup_open()'s result)\n", __func__);
 		} else {
-    		printk("[%s]: dentry = %s\n", __func__, dentry->d_name.name);
+    		printk("[%s]: dentry(my_lookup_open()'s result)= %s\n", __func__, dentry->d_name.name);
 		}
     } else {
         printk("[%s]: nd is null", __func__);
     }
+    // === test code end ===
 
     if (!IS_ERR(dentry) && (file->f_mode & FMODE_CREATED))
         fsnotify_create(dir->d_inode, dentry);
@@ -1110,21 +1124,17 @@ finish_lookup:
         put_link(nd);
     res = my_step_into(nd, WALK_TRAILING, dentry);
 
+    // === test code begin ===
     if(nd){
         if(nd->path.dentry){
-            printk("[%s]: (finish_lookup): nd->path.dentry=%s\n", __func__, nd->path.dentry->d_name.name);
+            printk("[%s]: nd->path.dentry(my_step_into()'s result)= %s\n", __func__, nd->path.dentry->d_name.name);
         } else {
-            printk("[%s]: (finish_lookup): nd->path.dentry is null", __func__);
-        }
-
-        if(res){
-            printk("[%s]: (finish_lookup): res=%s\n", __func__, res);
-        } else {
-            printk("[%s]: (finish_lookup): res is null", __func__);
+            printk("[%s]: nd->path.dentry(my_step_into()'s result) is null", __func__);
         }
     } else {
         printk("[%s]: nd is null", __func__);
     }
+    // === test code end ===
 
     if (unlikely(res))
         nd->flags &= ~(LOOKUP_OPEN|LOOKUP_CREATE|LOOKUP_EXCL);

@@ -312,6 +312,8 @@ repeat:
 
 int my_alloc_fd(unsigned start, unsigned end, unsigned flags)
 {
+    // printk("BITBIT_SIZE(64)= %ld", BITBIT_SIZE(64));
+    // printk("L1_CACHE_BYTES= %d", L1_CACHE_BYTES);
     printk("[%s]: my_alloc_fd start", __func__);
     struct files_struct *files = current->files;
 	unsigned int fd;

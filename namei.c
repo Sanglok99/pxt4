@@ -2864,19 +2864,28 @@ retry:
 	handle = pxt4_journal_current_handle();
 	err = PTR_ERR(inode);
 	if (!IS_ERR(inode)) {
+        printk("[%s]: 2\n", __func__);
 		inode->i_op = &pxt4_file_inode_operations;
 		inode->i_fop = &pxt4_file_operations;
 		pxt4_set_aops(inode);
 		err = pxt4_add_nondir(handle, dentry, &inode);
-		if (!err)
+		if (!err) {
+            printk("[%s]: 3\n", __func__);
 			pxt4_fc_track_create(handle, dentry);
+        }
 	}
-	if (handle)
+	if (handle) {
+        printk("[%s]: 4\n", __func__);
 		pxt4_journal_stop(handle);
-	if (!IS_ERR_OR_NULL(inode))
+    }
+	if (!IS_ERR_OR_NULL(inode)) { 
+        printk("[%s]: 5\n", __func__);
 		iput(inode);
-	if (err == -ENOSPC && pxt4_should_retry_alloc(dir->i_sb, &retries))
+    }
+	if (err == -ENOSPC && pxt4_should_retry_alloc(dir->i_sb, &retries)) {
+        printk("[%s]: 6\n", __func__);
 		goto retry;
+    }
 	return err;
 }
 EXPORT_SYMBOL(pxt4_file_operations); // open_syscall_module
