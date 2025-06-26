@@ -17,6 +17,8 @@ BFIRST	xattr.h	93;"	d
 BHDR	xattr.h	91;"	d
 BH_BITMAP_UPTODATE	pxt4.h	3770;"	d
 BH_FLAGS	inode.c	1884;"	d	file:
+BITBIT_NR	fs/file.c	33;"	d	file:
+BITBIT_SIZE	fs/file.c	34;"	d	file:
 BLOCK_BITMAP	pxt4.h	/^	BLOCK_BITMAP = 0,	\/* block bitmap *\/$/;"	e	enum:__anon2
 BLOCK_HASH_SHIFT	xattr.c	3195;"	d	file:
 BLOCK_HASH_SHIFT	xattr.c	3222;"	d	file:
@@ -53,18 +55,20 @@ EFSCORRUPTED	pxt4.h	3832;"	d
 EIA_INCR	xattr.c	2866;"	d	file:
 EIA_MASK	xattr.c	2867;"	d	file:
 EITHER	namei.c	/^	EITHER, INDEX, DIRENT, DIRENT_HTREE$/;"	e	enum:__anon27	file:
+EMBEDDED_LEVELS	fs/namei.c	57;"	d	file:
+EMBEDDED_NAME_MAX	fs/namei.c	53;"	d	file:
 ENTRY	xattr.h	92;"	d
 ERR_BAD_DX_DIR	pxt4.h	2553;"	d
 ES_AGGRESSIVE_TEST__	extents_status.h	28;"	d
-ES_DELAYED_B	extents_status.h	/^	ES_DELAYED_B,$/;"	e	enum:__anon31
-ES_FLAGS	extents_status.h	/^	ES_FLAGS$/;"	e	enum:__anon31
-ES_HOLE_B	extents_status.h	/^	ES_HOLE_B,$/;"	e	enum:__anon31
+ES_DELAYED_B	extents_status.h	/^	ES_DELAYED_B,$/;"	e	enum:__anon35
+ES_FLAGS	extents_status.h	/^	ES_FLAGS$/;"	e	enum:__anon35
+ES_HOLE_B	extents_status.h	/^	ES_HOLE_B,$/;"	e	enum:__anon35
 ES_MASK	extents_status.h	43;"	d
-ES_REFERENCED_B	extents_status.h	/^	ES_REFERENCED_B,$/;"	e	enum:__anon31
+ES_REFERENCED_B	extents_status.h	/^	ES_REFERENCED_B,$/;"	e	enum:__anon35
 ES_SHIFT	extents_status.h	42;"	d
 ES_TYPE_MASK	extents_status.h	51;"	d
-ES_UNWRITTEN_B	extents_status.h	/^	ES_UNWRITTEN_B,$/;"	e	enum:__anon31
-ES_WRITTEN_B	extents_status.h	/^	ES_WRITTEN_B,$/;"	e	enum:__anon31
+ES_UNWRITTEN_B	extents_status.h	/^	ES_UNWRITTEN_B,$/;"	e	enum:__anon35
+ES_WRITTEN_B	extents_status.h	/^	ES_WRITTEN_B,$/;"	e	enum:__anon35
 EXTENTS_STATS__	pxt4_extents.h	25;"	d
 EXTENT_STATUS_DELAYED	extents_status.h	47;"	d
 EXTENT_STATUS_HOLE	extents_status.h	48;"	d
@@ -153,6 +157,7 @@ MB_DEFAULT_STREAM_THRESHOLD	mballoc.h	64;"	d
 MB_GROUP_PA	mballoc.h	/^	MB_GROUP_PA = 1$/;"	e	enum:__anon19
 MB_INODE_PA	mballoc.h	/^	MB_INODE_PA = 0,$/;"	e	enum:__anon19
 MB_NUM_ORDERS	mballoc.h	98;"	d
+MNT_NS_INTERNAL	fs/mount.h	82;"	d
 MOPT_2	super.c	1860;"	d	file:
 MOPT_CLEAR	super.c	1846;"	d	file:
 MOPT_EXPLICIT	super.c	1848;"	d	file:
@@ -166,91 +171,96 @@ MOPT_QFMT	super.c	1851;"	d	file:
 MOPT_QFMT	super.c	1854;"	d	file:
 MOPT_SET	super.c	1845;"	d	file:
 MOPT_SKIP	super.c	1859;"	d	file:
+MY_FIND_NEXT_BIT	fs/file.c	36;"	d	file:
 NAMEI_RA_BLOCKS	namei.c	50;"	d	file:
 NAMEI_RA_CHUNKS	namei.c	49;"	d	file:
 NAMEI_RA_SIZE	namei.c	51;"	d	file:
 NAME_HASH_SHIFT	xattr.c	3144;"	d	file:
 NAME_HASH_SHIFT	xattr.c	3192;"	d	file:
+ND_JUMPED	fs/namei.c	56;"	d	file:
+ND_ROOT_GRABBED	fs/namei.c	55;"	d	file:
+ND_ROOT_PRESET	fs/namei.c	54;"	d	file:
 NEXT_ORPHAN	pxt4.h	1958;"	d
 NORET_AND	pxt4.h	2674;"	d
 NORET_TYPE	pxt4.h	2672;"	d
 NRL_CHECK_SIZE	mballoc.c	4442;"	d	file:
 NR_GRPINFO_CACHES	mballoc.c	409;"	d	file:
 NUM_PREALLOC_POST_READ_CTXS	readpage.c	49;"	d	file:
-Opt_abort	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon32	file:
-Opt_acl	super.c	/^	Opt_user_xattr, Opt_acl,$/;"	e	enum:__anon32	file:
-Opt_auto_da_alloc	super.c	/^	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,$/;"	e	enum:__anon32	file:
-Opt_barrier	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon32	file:
-Opt_block_validity	super.c	/^	Opt_nomblk_io_submit, Opt_block_validity, Opt_noblock_validity,$/;"	e	enum:__anon32	file:
-Opt_bsd_df	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon32	file:
-Opt_commit	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon32	file:
-Opt_data	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon32	file:
-Opt_data_err	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon32	file:
-Opt_data_err_abort	super.c	/^	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,$/;"	e	enum:__anon32	file:
-Opt_data_err_ignore	super.c	/^	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,$/;"	e	enum:__anon32	file:
-Opt_data_journal	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon32	file:
-Opt_data_ordered	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon32	file:
-Opt_data_writeback	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon32	file:
-Opt_dax	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon32	file:
-Opt_dax_always	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon32	file:
-Opt_dax_inode	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon32	file:
-Opt_dax_never	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon32	file:
-Opt_dax_type	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon32	file:
-Opt_debug	super.c	/^	Opt_nouid32, Opt_debug, Opt_removed,$/;"	e	enum:__anon32	file:
-Opt_debug_want_extra_isize	super.c	/^	Opt_nowarn_on_error, Opt_mblk_io_submit, Opt_debug_want_extra_isize,$/;"	e	enum:__anon32	file:
-Opt_delalloc	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon32	file:
-Opt_dioread_lock	super.c	/^	Opt_dioread_nolock, Opt_dioread_lock,$/;"	e	enum:__anon32	file:
-Opt_dioread_nolock	super.c	/^	Opt_dioread_nolock, Opt_dioread_lock,$/;"	e	enum:__anon32	file:
-Opt_discard	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon32	file:
-Opt_err	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon32	file:
-Opt_errors	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon32	file:
-Opt_fc_debug_force	super.c	/^	Opt_fc_debug_max_replay, Opt_fc_debug_force$/;"	e	enum:__anon32	file:
-Opt_fc_debug_max_replay	super.c	/^	Opt_fc_debug_max_replay, Opt_fc_debug_force$/;"	e	enum:__anon32	file:
-Opt_grpid	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon32	file:
-Opt_grpjquota	super.c	/^	Opt_usrjquota, Opt_grpjquota, Opt_quota,$/;"	e	enum:__anon32	file:
-Opt_grpquota	super.c	/^	Opt_usrquota, Opt_grpquota, Opt_prjquota,$/;"	e	enum:__anon32	file:
-Opt_init_itable	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon32	file:
-Opt_inlinecrypt	super.c	/^	Opt_inlinecrypt,$/;"	e	enum:__anon32	file:
-Opt_inode_readahead_blks	super.c	/^	Opt_inode_readahead_blks, Opt_journal_ioprio,$/;"	e	enum:__anon32	file:
-Opt_journal_async_commit	super.c	/^	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,$/;"	e	enum:__anon32	file:
-Opt_journal_checksum	super.c	/^	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,$/;"	e	enum:__anon32	file:
-Opt_journal_dev	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon32	file:
-Opt_journal_ioprio	super.c	/^	Opt_inode_readahead_blks, Opt_journal_ioprio,$/;"	e	enum:__anon32	file:
-Opt_journal_path	super.c	/^	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,$/;"	e	enum:__anon32	file:
-Opt_jqfmt	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon32	file:
-Opt_max_batch_time	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon32	file:
-Opt_max_dir_size_kb	super.c	/^	Opt_max_dir_size_kb, Opt_nojournal_checksum, Opt_nombcache,$/;"	e	enum:__anon32	file:
-Opt_mb_optimize_scan	super.c	/^	Opt_no_prefetch_block_bitmaps, Opt_mb_optimize_scan,$/;"	e	enum:__anon32	file:
-Opt_mblk_io_submit	super.c	/^	Opt_nowarn_on_error, Opt_mblk_io_submit, Opt_debug_want_extra_isize,$/;"	e	enum:__anon32	file:
-Opt_min_batch_time	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon32	file:
-Opt_minix_df	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon32	file:
-Opt_no_prefetch_block_bitmaps	super.c	/^	Opt_no_prefetch_block_bitmaps, Opt_mb_optimize_scan,$/;"	e	enum:__anon32	file:
-Opt_noauto_da_alloc	super.c	/^	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,$/;"	e	enum:__anon32	file:
-Opt_nobarrier	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon32	file:
-Opt_noblock_validity	super.c	/^	Opt_nomblk_io_submit, Opt_block_validity, Opt_noblock_validity,$/;"	e	enum:__anon32	file:
-Opt_nodelalloc	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon32	file:
-Opt_nodiscard	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon32	file:
-Opt_nogrpid	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon32	file:
-Opt_noinit_itable	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon32	file:
-Opt_nojournal_checksum	super.c	/^	Opt_max_dir_size_kb, Opt_nojournal_checksum, Opt_nombcache,$/;"	e	enum:__anon32	file:
-Opt_noload	super.c	/^	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,$/;"	e	enum:__anon32	file:
-Opt_nombcache	super.c	/^	Opt_max_dir_size_kb, Opt_nojournal_checksum, Opt_nombcache,$/;"	e	enum:__anon32	file:
-Opt_nomblk_io_submit	super.c	/^	Opt_nomblk_io_submit, Opt_block_validity, Opt_noblock_validity,$/;"	e	enum:__anon32	file:
-Opt_noquota	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon32	file:
-Opt_nouid32	super.c	/^	Opt_nouid32, Opt_debug, Opt_removed,$/;"	e	enum:__anon32	file:
-Opt_nowarn_on_error	super.c	/^	Opt_nowarn_on_error, Opt_mblk_io_submit, Opt_debug_want_extra_isize,$/;"	e	enum:__anon32	file:
-Opt_prjquota	super.c	/^	Opt_usrquota, Opt_grpquota, Opt_prjquota,$/;"	e	enum:__anon32	file:
-Opt_quota	super.c	/^	Opt_usrjquota, Opt_grpjquota, Opt_quota,$/;"	e	enum:__anon32	file:
-Opt_removed	super.c	/^	Opt_nouid32, Opt_debug, Opt_removed,$/;"	e	enum:__anon32	file:
-Opt_resgid	super.c	/^	Opt_resgid, Opt_resuid, Opt_sb,$/;"	e	enum:__anon32	file:
-Opt_resuid	super.c	/^	Opt_resgid, Opt_resuid, Opt_sb,$/;"	e	enum:__anon32	file:
-Opt_sb	super.c	/^	Opt_resgid, Opt_resuid, Opt_sb,$/;"	e	enum:__anon32	file:
-Opt_stripe	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon32	file:
-Opt_test_dummy_encryption	super.c	/^	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,$/;"	e	enum:__anon32	file:
-Opt_user_xattr	super.c	/^	Opt_user_xattr, Opt_acl,$/;"	e	enum:__anon32	file:
-Opt_usrjquota	super.c	/^	Opt_usrjquota, Opt_grpjquota, Opt_quota,$/;"	e	enum:__anon32	file:
-Opt_usrquota	super.c	/^	Opt_usrquota, Opt_grpquota, Opt_prjquota,$/;"	e	enum:__anon32	file:
-Opt_warn_on_error	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon32	file:
+O_PATH_FLAGS	fs/open.c	87;"	d	file:
+Opt_abort	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon36	file:
+Opt_acl	super.c	/^	Opt_user_xattr, Opt_acl,$/;"	e	enum:__anon36	file:
+Opt_auto_da_alloc	super.c	/^	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,$/;"	e	enum:__anon36	file:
+Opt_barrier	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon36	file:
+Opt_block_validity	super.c	/^	Opt_nomblk_io_submit, Opt_block_validity, Opt_noblock_validity,$/;"	e	enum:__anon36	file:
+Opt_bsd_df	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon36	file:
+Opt_commit	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon36	file:
+Opt_data	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon36	file:
+Opt_data_err	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon36	file:
+Opt_data_err_abort	super.c	/^	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,$/;"	e	enum:__anon36	file:
+Opt_data_err_ignore	super.c	/^	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,$/;"	e	enum:__anon36	file:
+Opt_data_journal	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon36	file:
+Opt_data_ordered	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon36	file:
+Opt_data_writeback	super.c	/^	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,$/;"	e	enum:__anon36	file:
+Opt_dax	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon36	file:
+Opt_dax_always	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon36	file:
+Opt_dax_inode	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon36	file:
+Opt_dax_never	super.c	/^	Opt_dax, Opt_dax_always, Opt_dax_inode, Opt_dax_never,$/;"	e	enum:__anon36	file:
+Opt_dax_type	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon36	file:
+Opt_debug	super.c	/^	Opt_nouid32, Opt_debug, Opt_removed,$/;"	e	enum:__anon36	file:
+Opt_debug_want_extra_isize	super.c	/^	Opt_nowarn_on_error, Opt_mblk_io_submit, Opt_debug_want_extra_isize,$/;"	e	enum:__anon36	file:
+Opt_delalloc	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon36	file:
+Opt_dioread_lock	super.c	/^	Opt_dioread_nolock, Opt_dioread_lock,$/;"	e	enum:__anon36	file:
+Opt_dioread_nolock	super.c	/^	Opt_dioread_nolock, Opt_dioread_lock,$/;"	e	enum:__anon36	file:
+Opt_discard	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon36	file:
+Opt_err	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon36	file:
+Opt_errors	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon36	file:
+Opt_fc_debug_force	super.c	/^	Opt_fc_debug_max_replay, Opt_fc_debug_force$/;"	e	enum:__anon36	file:
+Opt_fc_debug_max_replay	super.c	/^	Opt_fc_debug_max_replay, Opt_fc_debug_force$/;"	e	enum:__anon36	file:
+Opt_grpid	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon36	file:
+Opt_grpjquota	super.c	/^	Opt_usrjquota, Opt_grpjquota, Opt_quota,$/;"	e	enum:__anon36	file:
+Opt_grpquota	super.c	/^	Opt_usrquota, Opt_grpquota, Opt_prjquota,$/;"	e	enum:__anon36	file:
+Opt_init_itable	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon36	file:
+Opt_inlinecrypt	super.c	/^	Opt_inlinecrypt,$/;"	e	enum:__anon36	file:
+Opt_inode_readahead_blks	super.c	/^	Opt_inode_readahead_blks, Opt_journal_ioprio,$/;"	e	enum:__anon36	file:
+Opt_journal_async_commit	super.c	/^	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,$/;"	e	enum:__anon36	file:
+Opt_journal_checksum	super.c	/^	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,$/;"	e	enum:__anon36	file:
+Opt_journal_dev	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon36	file:
+Opt_journal_ioprio	super.c	/^	Opt_inode_readahead_blks, Opt_journal_ioprio,$/;"	e	enum:__anon36	file:
+Opt_journal_path	super.c	/^	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,$/;"	e	enum:__anon36	file:
+Opt_jqfmt	super.c	/^	Opt_errors, Opt_data, Opt_data_err, Opt_jqfmt, Opt_dax_type,$/;"	e	enum:__anon36	file:
+Opt_max_batch_time	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon36	file:
+Opt_max_dir_size_kb	super.c	/^	Opt_max_dir_size_kb, Opt_nojournal_checksum, Opt_nombcache,$/;"	e	enum:__anon36	file:
+Opt_mb_optimize_scan	super.c	/^	Opt_no_prefetch_block_bitmaps, Opt_mb_optimize_scan,$/;"	e	enum:__anon36	file:
+Opt_mblk_io_submit	super.c	/^	Opt_nowarn_on_error, Opt_mblk_io_submit, Opt_debug_want_extra_isize,$/;"	e	enum:__anon36	file:
+Opt_min_batch_time	super.c	/^	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,$/;"	e	enum:__anon36	file:
+Opt_minix_df	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon36	file:
+Opt_no_prefetch_block_bitmaps	super.c	/^	Opt_no_prefetch_block_bitmaps, Opt_mb_optimize_scan,$/;"	e	enum:__anon36	file:
+Opt_noauto_da_alloc	super.c	/^	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,$/;"	e	enum:__anon36	file:
+Opt_nobarrier	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon36	file:
+Opt_noblock_validity	super.c	/^	Opt_nomblk_io_submit, Opt_block_validity, Opt_noblock_validity,$/;"	e	enum:__anon36	file:
+Opt_nodelalloc	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon36	file:
+Opt_nodiscard	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon36	file:
+Opt_nogrpid	super.c	/^	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,$/;"	e	enum:__anon36	file:
+Opt_noinit_itable	super.c	/^	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,$/;"	e	enum:__anon36	file:
+Opt_nojournal_checksum	super.c	/^	Opt_max_dir_size_kb, Opt_nojournal_checksum, Opt_nombcache,$/;"	e	enum:__anon36	file:
+Opt_noload	super.c	/^	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,$/;"	e	enum:__anon36	file:
+Opt_nombcache	super.c	/^	Opt_max_dir_size_kb, Opt_nojournal_checksum, Opt_nombcache,$/;"	e	enum:__anon36	file:
+Opt_nomblk_io_submit	super.c	/^	Opt_nomblk_io_submit, Opt_block_validity, Opt_noblock_validity,$/;"	e	enum:__anon36	file:
+Opt_noquota	super.c	/^	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,$/;"	e	enum:__anon36	file:
+Opt_nouid32	super.c	/^	Opt_nouid32, Opt_debug, Opt_removed,$/;"	e	enum:__anon36	file:
+Opt_nowarn_on_error	super.c	/^	Opt_nowarn_on_error, Opt_mblk_io_submit, Opt_debug_want_extra_isize,$/;"	e	enum:__anon36	file:
+Opt_prjquota	super.c	/^	Opt_usrquota, Opt_grpquota, Opt_prjquota,$/;"	e	enum:__anon36	file:
+Opt_quota	super.c	/^	Opt_usrjquota, Opt_grpjquota, Opt_quota,$/;"	e	enum:__anon36	file:
+Opt_removed	super.c	/^	Opt_nouid32, Opt_debug, Opt_removed,$/;"	e	enum:__anon36	file:
+Opt_resgid	super.c	/^	Opt_resgid, Opt_resuid, Opt_sb,$/;"	e	enum:__anon36	file:
+Opt_resuid	super.c	/^	Opt_resgid, Opt_resuid, Opt_sb,$/;"	e	enum:__anon36	file:
+Opt_sb	super.c	/^	Opt_resgid, Opt_resuid, Opt_sb,$/;"	e	enum:__anon36	file:
+Opt_stripe	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon36	file:
+Opt_test_dummy_encryption	super.c	/^	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,$/;"	e	enum:__anon36	file:
+Opt_user_xattr	super.c	/^	Opt_user_xattr, Opt_acl,$/;"	e	enum:__anon36	file:
+Opt_usrjquota	super.c	/^	Opt_usrjquota, Opt_grpjquota, Opt_quota,$/;"	e	enum:__anon36	file:
+Opt_usrquota	super.c	/^	Opt_usrquota, Opt_grpquota, Opt_prjquota,$/;"	e	enum:__anon36	file:
+Opt_warn_on_error	super.c	/^	Opt_stripe, Opt_delalloc, Opt_nodelalloc, Opt_warn_on_error,$/;"	e	enum:__anon36	file:
 PLURAL	orphan.c	491;"	d	file:
 PREALLOC_TB_SIZE	mballoc.h	163;"	d
 PWD	Makefile	/^PWD  := $(shell pwd)$/;"	m
@@ -389,23 +399,23 @@ PXT4_EXT_MAY_ZEROOUT	extents.c	41;"	d	file:
 PXT4_EX_FORCE_CACHE	pxt4.h	729;"	d
 PXT4_EX_NOCACHE	pxt4.h	728;"	d
 PXT4_EX_NOFAIL	pxt4.h	730;"	d
-PXT4_FC_REASON_CROSS_RENAME	fast_commit.h	/^	PXT4_FC_REASON_CROSS_RENAME,$/;"	e	enum:__anon30
-PXT4_FC_REASON_ENCRYPTED_FILENAME	fast_commit.h	/^	PXT4_FC_REASON_ENCRYPTED_FILENAME,$/;"	e	enum:__anon30
-PXT4_FC_REASON_FALLOC_RANGE	fast_commit.h	/^	PXT4_FC_REASON_FALLOC_RANGE,$/;"	e	enum:__anon30
-PXT4_FC_REASON_INODE_JOURNAL_DATA	fast_commit.h	/^	PXT4_FC_REASON_INODE_JOURNAL_DATA,$/;"	e	enum:__anon30
-PXT4_FC_REASON_JOURNAL_FLAG_CHANGE	fast_commit.h	/^	PXT4_FC_REASON_JOURNAL_FLAG_CHANGE,$/;"	e	enum:__anon30
-PXT4_FC_REASON_MAX	fast_commit.h	/^	PXT4_FC_REASON_MAX$/;"	e	enum:__anon30
-PXT4_FC_REASON_NOMEM	fast_commit.h	/^	PXT4_FC_REASON_NOMEM,$/;"	e	enum:__anon30
-PXT4_FC_REASON_RENAME_DIR	fast_commit.h	/^	PXT4_FC_REASON_RENAME_DIR,$/;"	e	enum:__anon30
-PXT4_FC_REASON_RESIZE	fast_commit.h	/^	PXT4_FC_REASON_RESIZE,$/;"	e	enum:__anon30
-PXT4_FC_REASON_SWAP_BOOT	fast_commit.h	/^	PXT4_FC_REASON_SWAP_BOOT,$/;"	e	enum:__anon30
-PXT4_FC_REASON_XATTR	fast_commit.h	/^	PXT4_FC_REASON_XATTR = 0,$/;"	e	enum:__anon30
+PXT4_FC_REASON_CROSS_RENAME	fast_commit.h	/^	PXT4_FC_REASON_CROSS_RENAME,$/;"	e	enum:__anon34
+PXT4_FC_REASON_ENCRYPTED_FILENAME	fast_commit.h	/^	PXT4_FC_REASON_ENCRYPTED_FILENAME,$/;"	e	enum:__anon34
+PXT4_FC_REASON_FALLOC_RANGE	fast_commit.h	/^	PXT4_FC_REASON_FALLOC_RANGE,$/;"	e	enum:__anon34
+PXT4_FC_REASON_INODE_JOURNAL_DATA	fast_commit.h	/^	PXT4_FC_REASON_INODE_JOURNAL_DATA,$/;"	e	enum:__anon34
+PXT4_FC_REASON_JOURNAL_FLAG_CHANGE	fast_commit.h	/^	PXT4_FC_REASON_JOURNAL_FLAG_CHANGE,$/;"	e	enum:__anon34
+PXT4_FC_REASON_MAX	fast_commit.h	/^	PXT4_FC_REASON_MAX$/;"	e	enum:__anon34
+PXT4_FC_REASON_NOMEM	fast_commit.h	/^	PXT4_FC_REASON_NOMEM,$/;"	e	enum:__anon34
+PXT4_FC_REASON_RENAME_DIR	fast_commit.h	/^	PXT4_FC_REASON_RENAME_DIR,$/;"	e	enum:__anon34
+PXT4_FC_REASON_RESIZE	fast_commit.h	/^	PXT4_FC_REASON_RESIZE,$/;"	e	enum:__anon34
+PXT4_FC_REASON_SWAP_BOOT	fast_commit.h	/^	PXT4_FC_REASON_SWAP_BOOT,$/;"	e	enum:__anon34
+PXT4_FC_REASON_XATTR	fast_commit.h	/^	PXT4_FC_REASON_XATTR = 0,$/;"	e	enum:__anon34
 PXT4_FC_REPLAY	pxt4.h	1164;"	d
 PXT4_FC_REPLAY_REALLOC_INCREMENT	fast_commit.h	128;"	d
-PXT4_FC_STATUS_FAILED	fast_commit.h	/^	PXT4_FC_STATUS_FAILED,$/;"	e	enum:__anon29
-PXT4_FC_STATUS_INELIGIBLE	fast_commit.h	/^	PXT4_FC_STATUS_INELIGIBLE,$/;"	e	enum:__anon29
-PXT4_FC_STATUS_OK	fast_commit.h	/^	PXT4_FC_STATUS_OK = 0,$/;"	e	enum:__anon29
-PXT4_FC_STATUS_SKIPPED	fast_commit.h	/^	PXT4_FC_STATUS_SKIPPED,$/;"	e	enum:__anon29
+PXT4_FC_STATUS_FAILED	fast_commit.h	/^	PXT4_FC_STATUS_FAILED,$/;"	e	enum:__anon33
+PXT4_FC_STATUS_INELIGIBLE	fast_commit.h	/^	PXT4_FC_STATUS_INELIGIBLE,$/;"	e	enum:__anon33
+PXT4_FC_STATUS_OK	fast_commit.h	/^	PXT4_FC_STATUS_OK = 0,$/;"	e	enum:__anon33
+PXT4_FC_STATUS_SKIPPED	fast_commit.h	/^	PXT4_FC_STATUS_SKIPPED,$/;"	e	enum:__anon33
 PXT4_FC_SUPPORTED_FEATURES	fast_commit.h	22;"	d
 PXT4_FC_TAG_ADD_RANGE	fast_commit.h	12;"	d
 PXT4_FC_TAG_BASE_LEN	fast_commit.h	74;"	d
@@ -882,6 +892,7 @@ STEP_DECRYPT	readpage.c	/^	STEP_DECRYPT,$/;"	e	enum:bio_post_read_step	file:
 STEP_INITIAL	readpage.c	/^	STEP_INITIAL = 0,$/;"	e	enum:bio_post_read_step	file:
 STEP_MAX	readpage.c	/^	STEP_MAX,$/;"	e	enum:bio_post_read_step	file:
 STEP_VERITY	readpage.c	/^	STEP_VERITY,$/;"	e	enum:bio_post_read_step	file:
+S_IALLUGO	fs/open.c	85;"	d	file:
 S_SHIFT	pxt4.h	3608;"	d
 TEA_transform	hash.c	/^static void TEA_transform(__u32 buf[4], __u32 const in[])$/;"	f	file:
 TEST_FLAG_VALUE	pxt4.h	614;"	d
@@ -895,8 +906,13 @@ UPPER_BOUND_NONNEG_LO_1_CASE	inode-test.c	56;"	d	file:
 UPPER_BOUND_NONNEG_NO_EXTRA_BITS_CASE	inode-test.c	48;"	d	file:
 UPPER_MSB_0	inode-test.c	23;"	d	file:
 UPPER_MSB_1	inode-test.c	33;"	d	file:
+VALID_OPEN_FLAGS	fs/open.c	79;"	d	file:
 VALUE_HASH_SHIFT	xattr.c	3145;"	d	file:
 VALUE_HASH_SHIFT	xattr.c	3193;"	d	file:
+WALK_MORE	fs/namei.c	/^enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};$/;"	e	enum:__anon31	file:
+WALK_NOFOLLOW	fs/namei.c	/^enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};$/;"	e	enum:__anon31	file:
+WALK_TRAILING	fs/namei.c	/^enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};$/;"	e	enum:__anon31	file:
+WILL_CREATE	fs/open.c	89;"	d	file:
 _PXT4_EXTENTS	pxt4_extents.h	8;"	d
 _PXT4_EXTENTS_STATUS_H	extents_status.h	13;"	d
 _PXT4_H	pxt4.h	18;"	d
@@ -916,6 +932,7 @@ __blist_add_buffer	jbd3/transaction.c	/^__blist_add_buffer(struct journal_head *
 __blist_del_buffer	jbd3/transaction.c	/^__blist_del_buffer(struct journal_head **list, struct journal_head *jh)$/;"	f	file:
 __buffer_unlink	jbd3/checkpoint.c	/^static inline void __buffer_unlink(struct journal_head *jh)$/;"	f	file:
 __check_block_validity	inode.c	/^static int __check_block_validity(struct inode *inode, const char *func,$/;"	f	file:
+__const_min	fs/file.c	25;"	d	file:
 __dispose_buffer	jbd3/transaction.c	/^static int __dispose_buffer(struct journal_head *jh, transaction_t *transaction)$/;"	f	file:
 __dump_mmp_msg	mmp.c	/^void __dump_mmp_msg(struct super_block *sb, struct mmp_struct *mmp,$/;"	f
 __es_alloc_extent	extents_status.c	/^static inline struct extent_status *__es_alloc_extent(bool nofail)$/;"	f	file:
@@ -931,6 +948,7 @@ __es_tree_search	extents_status.c	/^static struct extent_status *__es_tree_searc
 __flush_batch	jbd3/checkpoint.c	/^__flush_batch(journal_t *journal, int *batch_count)$/;"	f	file:
 __free_pending	extents_status.c	/^static inline void __free_pending(struct pending_reservation *pr)$/;"	f	file:
 __get_pending	extents_status.c	/^static struct pending_reservation *__get_pending(struct inode *inode,$/;"	f	file:
+__getname	fs/namei.c	52;"	d	file:
 __insert_pending	extents_status.c	/^static int __insert_pending(struct inode *inode, pxt4_lblk_t lblk,$/;"	f	file:
 __jbd3_debug	jbd3/journal.c	/^void __jbd3_debug(int level, const char *file, const char *func,$/;"	f
 __jbd3_fc_end_commit	jbd3/journal.c	/^static int __jbd3_fc_end_commit(journal_t *journal, tid_t tid, bool fallback)$/;"	f	file:
@@ -949,9 +967,17 @@ __jbd3_log_start_commit	jbd3/journal.c	/^static int __jbd3_log_start_commit(jour
 __jbd3_update_log_tail	jbd3/journal.c	/^int __jbd3_update_log_tail(journal_t *journal, tid_t tid, unsigned long block)$/;"	f
 __journal_remove_journal_head	jbd3/journal.c	/^static void __journal_remove_journal_head(struct buffer_head *bh)$/;"	f	file:
 __mb_check_buddy	mballoc.c	/^static int __mb_check_buddy(struct pxt4_buddy *e4b, char *file,$/;"	f	file:
+__my_d_lookup_rcu	fs/namei.c	/^struct dentry *__my_d_lookup_rcu(const struct dentry *parent,$/;"	f
+__my_d_lookup_rcu_op_compare	fs/namei.c	/^static noinline struct dentry *__my_d_lookup_rcu_op_compare($/;"	f	file:
+__my_free_fdtable	fs/file.c	/^static void __my_free_fdtable(struct fdtable *fdt)$/;"	f	file:
+__my_get_unused_fd_flags	fs/file.c	/^int __my_get_unused_fd_flags(unsigned flags, unsigned long nofile)$/;"	f
+__my_legitimize_mnt	fs/namei.c	/^int __my_legitimize_mnt(struct vfsmount *bastard, unsigned seq)$/;"	f
+__my_legitimize_path	fs/namei.c	/^static bool __my_legitimize_path(struct path *path, unsigned seq, unsigned mseq)$/;"	f	file:
+__my_set_open_fd	fs/file.c	/^inline void __my_set_open_fd(unsigned int fd, struct fdtable *fdt)$/;"	f
 __nonstring	pxt4.h	/^	__u8	s_first_error_func[32] __nonstring;	\/* function where the error happened *\/$/;"	m	struct:pxt4_super_block
 __nonstring	pxt4.h	/^	__u8	s_last_error_func[32] __nonstring;	\/* function where the error happened *\/$/;"	m	struct:pxt4_super_block
 __nonstring	pxt4.h	/^\/*88*\/	char	s_last_mounted[64] __nonstring;	\/* directory where last mounted *\/$/;"	m	struct:pxt4_super_block
+__path_is_mountpoint	fs/mount.h	/^static inline bool __path_is_mountpoint(const struct path *path)$/;"	f
 __pr_tree_search	extents_status.c	/^static struct pending_reservation *__pr_tree_search(struct rb_root *root,$/;"	f	file:
 __print_tstamp	sysfs.c	/^static ssize_t __print_tstamp(char *buf, __le32 lo, __u8 hi)$/;"	f	file:
 __pxt4_block_zero_page_range	inode.c	/^static int __pxt4_block_zero_page_range(handle_t *handle,$/;"	f	file:
@@ -1009,8 +1035,12 @@ __pxt4_warning_inode	super.c	/^void __pxt4_warning_inode(const struct inode *ino
 __pxt4_xattr_check_block	xattr.c	/^__pxt4_xattr_check_block(struct inode *inode, struct buffer_head *bh,$/;"	f	file:
 __pxt4_xattr_set_credits	xattr.c	/^int __pxt4_xattr_set_credits(struct super_block *sb, struct inode *inode,$/;"	f
 __pxt4fs_dirhash	hash.c	/^static int __pxt4fs_dirhash(const struct inode *dir, const char *name, int len,$/;"	f	file:
+__randomize_layout	fs/mount.h	/^} __randomize_layout;$/;"	v	typeref:struct:mnt_namespace
+__randomize_layout	fs/mount.h	/^} __randomize_layout;$/;"	v	typeref:struct:mount
+__randomize_layout	fs/namei.c	/^} __randomize_layout;$/;"	v	typeref:struct:nameidata
 __read_end_io	readpage.c	/^static void __read_end_io(struct bio *bio)$/;"	f	file:
 __read_extent_tree_block	extents.c	/^__read_extent_tree_block(const char *function, unsigned int line,$/;"	f	file:
+__read_mostly	fs/file.c	/^unsigned int sysctl_nr_open __read_mostly = 1024*1024;$/;"	v
 __read_mostly	jbd3/journal.c	/^static ushort jbd3_journal_enable_debug __read_mostly;$/;"	v	file:
 __releases	mballoc.c	/^__releases(bitlock)$/;"	f
 __releases	super.c	/^__releases(bitlock)$/;"	f
@@ -1026,6 +1056,7 @@ __track_range	fast_commit.c	/^static int __track_range(struct inode *inode, void
 __track_range_args	fast_commit.c	/^struct __track_range_args {$/;"	s	file:
 __warn_no_space_for_csum	namei.c	/^static void __warn_no_space_for_csum(struct inode *inode, const char *func,$/;"	f	file:
 __xattr_check_inode	xattr.c	/^__xattr_check_inode(struct inode *inode, struct pxt4_xattr_ibody_header *header,$/;"	f	file:
+_my_find_next_zero_bit	fs/file.c	/^unsigned long _my_find_next_zero_bit(const unsigned long *addr, unsigned long nbits,$/;"	f
 _pxt4_get_block	inode.c	/^static int _pxt4_get_block(struct inode *inode, sector_t iblock,$/;"	f	file:
 _pxt4_journal_callback_add	pxt4_jbd3.h	/^static inline void _pxt4_journal_callback_add(handle_t *handle,$/;"	f
 _pxt4_show_options	super.c	/^static int _pxt4_show_options(struct seq_file *seq, struct super_block *sb,$/;"	f	file:
@@ -1053,6 +1084,7 @@ ac_pa	mballoc.h	/^	struct pxt4_prealloc_space *ac_pa;$/;"	m	struct:pxt4_allocati
 ac_sb	mballoc.h	/^	struct super_block *ac_sb;$/;"	m	struct:pxt4_allocation_context	typeref:struct:pxt4_allocation_context::super_block
 ac_status	mballoc.h	/^	__u8 ac_status;$/;"	m	struct:pxt4_allocation_context
 ac_tail	mballoc.h	/^	__u16 ac_tail;$/;"	m	struct:pxt4_allocation_context
+acc_mode	fs/internal.h	/^	int acc_mode;$/;"	m	struct:open_flags
 add_chain	indirect.c	/^static inline void add_chain(Indirect *p, struct buffer_head *bh, __le32 *v)$/;"	f	file:
 add_dirent_to_buf	namei.c	/^static int add_dirent_to_buf(handle_t *handle, struct pxt4_filename *fname,$/;"	f	file:
 add_new_gdb	resize.c	/^static int add_new_gdb(handle_t *handle, struct inode *inode,$/;"	f	file:
@@ -1086,6 +1118,7 @@ attr_session_write_kbytes	sysfs.c	/^	attr_session_write_kbytes,$/;"	e	enum:__ano
 attr_size	sysfs.c	/^	unsigned short attr_size;$/;"	m	struct:pxt4_attr	file:
 attr_sra_exceeded_retry_limit	sysfs.c	/^	attr_sra_exceeded_retry_limit,$/;"	e	enum:__anon24	file:
 attr_trigger_test_error	sysfs.c	/^	attr_trigger_test_error,$/;"	e	enum:__anon24	file:
+avg_bw	fs/namei.c	/^    u32 avg_bw;$/;"	m	struct:icc_req	file:
 base	xattr.h	/^	void *base;$/;"	m	struct:pxt4_xattr_search
 batched_discard	sysfs.c	/^PXT4_ATTR_FEATURE(batched_discard);$/;"	v
 bb_avg_fragment_size_node	pxt4.h	/^	struct list_head bb_avg_fragment_size_node;$/;"	m	struct:pxt4_group_info	typeref:struct:pxt4_group_info::list_head
@@ -1112,6 +1145,7 @@ bd_buddy_page	mballoc.h	/^	struct page *bd_buddy_page;$/;"	m	struct:pxt4_buddy	t
 bd_group	mballoc.h	/^	pxt4_group_t bd_group;$/;"	m	struct:pxt4_buddy
 bd_info	mballoc.h	/^	struct pxt4_group_info *bd_info;$/;"	m	struct:pxt4_buddy	typeref:struct:pxt4_buddy::pxt4_group_info
 bd_sb	mballoc.h	/^	struct super_block *bd_sb;$/;"	m	struct:pxt4_buddy	typeref:struct:pxt4_buddy::super_block
+bdev_cache_init	fs/internal.h	/^static inline void bdev_cache_init(void)$/;"	f
 bg_block_bitmap_csum_hi	pxt4.h	/^	__le16  bg_block_bitmap_csum_hi;\/* crc32c(s_uuid+grp_num+bbitmap) BE *\/$/;"	m	struct:pxt4_group_desc
 bg_block_bitmap_csum_lo	pxt4.h	/^	__le16  bg_block_bitmap_csum_lo;\/* crc32c(s_uuid+grp_num+bbitmap) LE *\/$/;"	m	struct:pxt4_group_desc
 bg_block_bitmap_hi	pxt4.h	/^	__le32	bg_block_bitmap_hi;	\/* Blocks bitmap block MSB *\/$/;"	m	struct:pxt4_group_desc
@@ -1192,6 +1226,8 @@ curr_block	migrate.c	/^	pxt4_lblk_t first_block, last_block, curr_block;$/;"	m	s
 curr_hash	pxt4.h	/^	__u32		curr_hash;$/;"	m	struct:dir_private_info
 curr_minor_hash	pxt4.h	/^	__u32		curr_minor_hash;$/;"	m	struct:dir_private_info
 curr_node	pxt4.h	/^	struct rb_node	*curr_node;$/;"	m	struct:dir_private_info	typeref:struct:dir_private_info::rb_node
+cursor	fs/mount.h	/^	struct mount cursor;$/;"	m	struct:proc_mounts	typeref:struct:proc_mounts::mount
+cvalue	fs/internal.h	/^		const void __user *cvalue;$/;"	m	union:xattr_ctx::__anon30
 dax_compatible	ioctl.c	/^static bool dax_compatible(struct inode *inode, unsigned int oldflags,$/;"	f	file:
 de	namei.c	/^	struct pxt4_dir_entry_2 *de;$/;"	m	struct:pxt4_renament	typeref:struct:pxt4_renament::pxt4_dir_entry_2	file:
 debug_print_tree	block_validity.c	/^static void debug_print_tree(struct pxt4_sb_info *sbi)$/;"	f	file:
@@ -1199,6 +1235,7 @@ decrypt_work	readpage.c	/^static void decrypt_work(struct work_struct *work)$/;"
 dentry	fast_commit.c	/^	struct dentry *dentry;$/;"	m	struct:__track_dentry_update_args	typeref:struct:__track_dentry_update_args::dentry	file:
 dentry	namei.c	/^	struct dentry *dentry;$/;"	m	struct:pxt4_renament	typeref:struct:pxt4_renament::dentry	file:
 dentry_info_args	fast_commit.c	/^struct dentry_info_args {$/;"	s	file:
+depth	fs/namei.c	/^    unsigned depth;$/;"	m	struct:nameidata	file:
 descriptor_loc	super.c	/^static pxt4_fsblk_t descriptor_loc(struct super_block *sb,$/;"	f	file:
 destroy_inodecache	super.c	/^static void destroy_inodecache(void)$/;"	f	file:
 det_checksum	pxt4.h	/^	__le32	det_checksum;		\/* crc32c(uuid+inum+dirblock) *\/$/;"	m	struct:pxt4_dir_entry_tail
@@ -1206,21 +1243,29 @@ det_rec_len	pxt4.h	/^	__le16	det_rec_len;		\/* 12 *\/$/;"	m	struct:pxt4_dir_entr
 det_reserved_ft	pxt4.h	/^	__u8	det_reserved_ft;	\/* 0xDE, fake file type *\/$/;"	m	struct:pxt4_dir_entry_tail
 det_reserved_zero1	pxt4.h	/^	__le32	det_reserved_zero1;	\/* Pretend to be unused *\/$/;"	m	struct:pxt4_dir_entry_tail
 det_reserved_zero2	pxt4.h	/^	__u8	det_reserved_zero2;	\/* Zero name length *\/$/;"	m	struct:pxt4_dir_entry_tail
+detach_mounts	fs/mount.h	/^static inline void detach_mounts(struct dentry *dentry)$/;"	f
+dev	fs/namei.c	/^    struct device *dev;$/;"	m	struct:icc_req	typeref:struct:icc_req::device	file:
+dfd	fs/namei.c	/^    int dfd;$/;"	m	struct:nameidata	file:
 dir	namei.c	/^	struct inode *dir;$/;"	m	struct:pxt4_renament	typeref:struct:pxt4_renament::inode	file:
 dir_bh	namei.c	/^	struct buffer_head *dir_bh;$/;"	m	struct:pxt4_renament	typeref:struct:pxt4_renament::buffer_head	file:
 dir_inlined	namei.c	/^	int dir_inlined;$/;"	m	struct:pxt4_renament	file:
+dir_mode	fs/namei.c	/^    umode_t dir_mode;$/;"	m	struct:nameidata	file:
 dir_nlink_delta	namei.c	/^	int dir_nlink_delta;$/;"	m	struct:pxt4_renament	file:
 dir_private_info	pxt4.h	/^struct dir_private_info {$/;"	s
+dir_vfsuid	fs/namei.c	/^    vfsuid_t dir_vfsuid;$/;"	m	struct:nameidata	file:
 dirblock_type_t	namei.c	/^} dirblock_type_t;$/;"	t	typeref:enum:__anon27	file:
 disk_name	pxt4.h	/^	struct fscrypt_str disk_name;$/;"	m	struct:pxt4_filename	typeref:struct:pxt4_filename::fscrypt_str
 dname	fast_commit.c	/^	char *dname;$/;"	m	struct:dentry_info_args	file:
 dname_len	fast_commit.c	/^	int parent_ino, dname_len, ino, inode_len;$/;"	m	struct:dentry_info_args	file:
+do_get_acl	fs/internal.h	/^static inline ssize_t do_get_acl(struct mnt_idmap *idmap,$/;"	f
 do_get_write_access	jbd3/transaction.c	/^do_get_write_access(handle_t *handle, struct journal_head *jh,$/;"	f	file:
 do_journal_get_write_access	inode.c	/^int do_journal_get_write_access(handle_t *handle, struct inode *inode,$/;"	f
 do_map	inode.c	/^	unsigned int do_map:1;$/;"	m	struct:mpage_da_data	file:
 do_one_pass	jbd3/recovery.c	/^static int do_one_pass(journal_t *journal,$/;"	f	file:
 do_readahead	jbd3/recovery.c	/^static int do_readahead(journal_t *journal, unsigned int start)$/;"	f	file:
+do_set_acl	fs/internal.h	/^static inline int do_set_acl(struct mnt_idmap *idmap,$/;"	f
 do_split	namei.c	/^static struct pxt4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,$/;"	f	file:
+done	fs/namei.c	/^        struct delayed_call done;$/;"	m	struct:nameidata::saved	typeref:struct:nameidata::saved::delayed_call	file:
 dot	namei.c	/^	struct fake_dirent dot;$/;"	m	struct:dx_root	typeref:struct:dx_root::fake_dirent	file:
 dot_name	namei.c	/^	char dot_name[4];$/;"	m	struct:dx_root	file:
 dotdot	namei.c	/^	struct fake_dirent dotdot;$/;"	m	struct:dx_root	typeref:struct:dx_root::fake_dirent	file:
@@ -1302,6 +1347,7 @@ ei_leaf_hi	pxt4_extents.h	/^	__le16	ei_leaf_hi;	\/* high 16 bits of physical blo
 ei_leaf_lo	pxt4_extents.h	/^	__le32	ei_leaf_lo;	\/* pointer to the physical block of the next *$/;"	m	struct:pxt4_extent_idx
 ei_unused	pxt4_extents.h	/^	__u16	ei_unused;$/;"	m	struct:pxt4_extent_idx
 empty_inline_dir	inline.c	/^bool empty_inline_dir(struct inode *dir, int *has_inline_data)$/;"	f
+enabled	fs/namei.c	/^    bool enabled;$/;"	m	struct:icc_req	file:
 enabled_steps	readpage.c	/^	unsigned int enabled_steps;$/;"	m	struct:bio_post_read_ctx	file:
 encrypted_casefold	sysfs.c	/^PXT4_ATTR_FEATURE(encrypted_casefold);$/;"	v
 encryption	sysfs.c	/^PXT4_ATTR_FEATURE(encryption);$/;"	v
@@ -1328,6 +1374,7 @@ es_stats_scan_time	extents_status.h	/^	u64 es_stats_scan_time;$/;"	m	struct:pxt4
 es_stats_shk_cnt	extents_status.h	/^	struct percpu_counter es_stats_shk_cnt;$/;"	m	struct:pxt4_es_stats	typeref:struct:pxt4_es_stats::percpu_counter
 es_stats_shrunk	extents_status.h	/^	unsigned long es_stats_shrunk;$/;"	m	struct:pxt4_es_stats
 et_checksum	pxt4_extents.h	/^	__le32	et_checksum;	\/* crc32c(uuid+inum+extent_block) *\/$/;"	m	struct:pxt4_extent_tail
+event	fs/mount.h	/^	u64 event;$/;"	m	struct:mnt_namespace
 expected	inode-test.c	/^	struct timespec64 expected;$/;"	m	struct:timestamp_expectation	typeref:struct:timestamp_expectation::timespec64	file:
 explicit_ptr	sysfs.c	/^		void *explicit_ptr;$/;"	m	union:pxt4_attr::__anon26	file:
 ext3_feature_set_ok	super.c	/^static inline int ext3_feature_set_ok(struct super_block *sb)$/;"	f	file:
@@ -1398,6 +1445,7 @@ fe_start	mballoc.h	/^	pxt4_grpblk_t fe_start;	\/* In cluster units *\/$/;"	m	str
 file_type	dir.c	/^	__u8		file_type;$/;"	m	struct:fname	file:
 file_type	namei.c	/^	u8 file_type;$/;"	m	struct:fake_dirent	file:
 file_type	pxt4.h	/^	__u8	file_type;		\/* See file type macros PXT4_FT_* below *\/$/;"	m	struct:pxt4_dir_entry_2
+files_stat	fs/namei.c	/^static struct files_stat_struct files_stat = {$/;"	v	typeref:struct:files_stat_struct	file:
 find_group_orlov	ialloc.c	/^EXPORT_SYMBOL(find_group_orlov); \/\/ open_syscall_module$/;"	v
 find_group_orlov	ialloc.c	/^int find_group_orlov(struct super_block *sb, struct inode *parent,$/;"	f
 find_group_other	ialloc.c	/^static int find_group_other(struct super_block *sb, struct inode *parent,$/;"	f	file:
@@ -1412,6 +1460,8 @@ first_do_lblk_found	extents_status.c	/^	bool first_do_lblk_found;$/;"	m	struct:r
 first_page	inode.c	/^	pgoff_t first_page;	\/* The first page to write *\/$/;"	m	struct:mpage_da_data	file:
 first_pblock	migrate.c	/^	pxt4_fsblk_t first_pblock, last_pblock;$/;"	m	struct:migrate_struct	file:
 flag	pxt4.h	/^	unsigned int		flag;		\/* unwritten or not *\/$/;"	m	struct:pxt4_io_end
+flags	fs/internal.h	/^	unsigned int flags;$/;"	m	struct:xattr_ctx
+flags	fs/namei.c	/^    unsigned int flags, state;$/;"	m	struct:nameidata	file:
 flags	pxt4.h	/^	unsigned int flags;$/;"	m	struct:pxt4_allocation_request
 flags	super.c	/^	int	flags;$/;"	m	struct:mount_opts	file:
 flags	super.c	/^PXT4_SET_CTX(flags); \/* set only *\/$/;"	v
@@ -1454,6 +1504,7 @@ get_ext_path	move_extent.c	/^get_ext_path(struct inode *inode, pxt4_lblk_t lbloc
 get_groupinfo_cache	mballoc.c	/^static struct kmem_cache *get_groupinfo_cache(int blocksize_bits)$/;"	f	file:
 get_implied_cluster_alloc	extents.c	/^static int get_implied_cluster_alloc(struct super_block *sb,$/;"	f	file:
 get_max_inline_xattr_value_size	inline.c	/^static int get_max_inline_xattr_value_size(struct inode *inode,$/;"	f	file:
+get_mnt_ns	fs/mount.h	/^static inline void get_mnt_ns(struct mnt_namespace *ns)$/;"	f
 get_orlov_stats	ialloc.c	/^static void get_orlov_stats(struct super_block *sb, pxt4_group_t g,$/;"	f	file:
 get_qf_name	super.c	/^static inline char *get_qf_name(struct super_block *sb,$/;"	f	file:
 get_rsvd	extents_status.c	/^static unsigned int get_rsvd(struct inode *inode, pxt4_lblk_t end,$/;"	f	file:
@@ -1605,6 +1656,8 @@ i_uid_high	pxt4.h	949;"	d
 i_uid_low	pxt4.h	940;"	d
 i_unwritten	pxt4.h	/^	atomic_t i_unwritten; \/* Nr. of inflight conversions pending *\/$/;"	m	struct:pxt4_inode_info
 i_version_hi	pxt4.h	/^	__le32  i_version_hi;	\/* high 32 bits for 64-bit version *\/$/;"	m	struct:pxt4_inode
+icc_path	fs/namei.c	/^struct icc_path {$/;"	s	file:
+icc_req	fs/namei.c	/^struct icc_req {$/;"	s	file:
 iloc	xattr.h	/^	struct pxt4_iloc iloc;$/;"	m	struct:pxt4_xattr_ibody_find	typeref:struct:pxt4_xattr_ibody_find::pxt4_iloc
 in_inode	xattr.h	/^	int in_inode;$/;"	m	struct:pxt4_xattr_info
 indirect_levels	namei.c	/^		u8 indirect_levels;$/;"	m	struct:dx_root::dx_root_info	file:
@@ -1613,12 +1666,13 @@ info_length	namei.c	/^		u8 info_length; \/* 8 *\/$/;"	m	struct:dx_root::dx_root_
 init_inodecache	super.c	/^static int __init init_inodecache(void)$/;"	f	file:
 init_once	super.c	/^static void init_once(void *foo)$/;"	f	file:
 init_rsvd	extents_status.c	/^static void init_rsvd(struct inode *inode, pxt4_lblk_t lblk,$/;"	f	file:
-initial	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	e	enum:partial_cluster::__anon28
+initial	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	e	enum:partial_cluster::__anon32
 inlined	namei.c	/^	int inlined;$/;"	m	struct:pxt4_renament	file:
 ino	block_validity.c	/^	u32		ino;$/;"	m	struct:pxt4_system_zone	file:
 ino	fast_commit.c	/^	int parent_ino, dname_len, ino, inode_len;$/;"	m	struct:dentry_info_args	file:
 ino	fast_commit.h	/^	int ino, len;$/;"	m	struct:pxt4_fc_alloc_region
 inode	dir.c	/^	__u32		inode;$/;"	m	struct:fname	file:
+inode	fs/namei.c	/^    struct inode *inode; \/* path.dentry.d_inode *\/$/;"	m	struct:nameidata	typeref:struct:nameidata::inode	file:
 inode	inode.c	/^	struct inode *inode;$/;"	m	struct:mpage_da_data	typeref:struct:mpage_da_data::inode	file:
 inode	namei.c	/^	__le32 inode;$/;"	m	struct:fake_dirent	file:
 inode	namei.c	/^	struct inode *inode;$/;"	m	struct:pxt4_renament	typeref:struct:pxt4_renament::inode	file:
@@ -1638,6 +1692,8 @@ inode_test_xtimestamp_decoding	inode-test.c	/^static void inode_test_xtimestamp_
 inodes	xattr.h	/^	struct inode *inodes[];$/;"	m	struct:pxt4_xattr_inode_array	typeref:struct:pxt4_xattr_inode_array::inode
 insert_revoke_hash	jbd3/revoke.c	/^static int insert_revoke_hash(journal_t *journal, unsigned long long blocknr,$/;"	f	file:
 inside	resize.c	132;"	d	file:
+intent	fs/internal.h	/^	int intent;$/;"	m	struct:open_flags
+internal	fs/namei.c	/^    } *stack, internal[EMBEDDED_LEVELS];$/;"	m	struct:nameidata	typeref:struct:nameidata::saved	file:
 io_bio	pxt4.h	/^	struct bio		*io_bio;$/;"	m	struct:pxt4_io_submit	typeref:struct:pxt4_io_submit::bio
 io_end	pxt4.h	/^	pxt4_io_end_t		*io_end;$/;"	m	struct:pxt4_io_submit
 io_end_cachep	page-io.c	/^static struct kmem_cache *io_end_cachep;$/;"	v	typeref:struct:kmem_cache	file:
@@ -1648,11 +1704,15 @@ io_submit_add_bh	page-io.c	/^static void io_submit_add_bh(struct pxt4_io_submit 
 io_submit_init_bio	page-io.c	/^static void io_submit_init_bio(struct pxt4_io_submit *io,$/;"	f	file:
 io_wbc	pxt4.h	/^	struct writeback_control *io_wbc;$/;"	m	struct:pxt4_io_submit	typeref:struct:pxt4_io_submit::writeback_control
 is_32bit_api	dir.c	/^static inline int is_32bit_api(void)$/;"	f	file:
+is_anon_ns	fs/mount.h	/^static inline bool is_anon_ns(struct mnt_namespace *ns)$/;"	f
 is_dir	namei.c	/^	bool is_dir;$/;"	m	struct:pxt4_renament	file:
 is_dx	pxt4.h	2434;"	d
 is_dx_dir	dir.c	/^static int is_dx_dir(struct inode *inode)$/;"	f	file:
 is_dx_internal_node	namei.c	/^static int is_dx_internal_node(struct inode *dir, pxt4_lblk_t block,$/;"	f	file:
+is_ext4_inode	fs/namei.c	/^static inline bool is_ext4_inode(struct inode *inode)$/;"	f	file:
 is_fake_dir_entry	dir.c	/^static bool is_fake_dir_entry(struct pxt4_dir_entry_2 *de)$/;"	f	file:
+is_local_mountpoint	fs/mount.h	/^static inline bool is_local_mountpoint(struct dentry *dentry)$/;"	f
+is_mounted	fs/mount.h	/^static inline int is_mounted(struct vfsmount *mnt)$/;"	f
 jbd3-objs	jbd3/Makefile	/^jbd3-objs := transaction.o commit.o recovery.o checkpoint.o revoke.o journal.o$/;"	m
 jbd3__journal_restart	jbd3/transaction.c	/^EXPORT_SYMBOL(jbd3__journal_restart);$/;"	v
 jbd3__journal_restart	jbd3/transaction.c	/^int jbd3__journal_restart(handle_t *handle, int nblocks, int revoke_records,$/;"	f
@@ -1903,6 +1963,8 @@ jread	jbd3/recovery.c	/^static int jread(struct buffer_head **bhp, journal_t *jo
 key	indirect.c	/^	__le32	key;$/;"	m	struct:__anon20	file:
 kjournald2	jbd3/journal.c	/^static int kjournald2(void *arg)$/;"	f	file:
 kmmpd	mmp.c	/^static int kmmpd(void *data)$/;"	f	file:
+kname	fs/internal.h	/^	struct xattr_name *kname;$/;"	m	struct:xattr_ctx	typeref:struct:xattr_ctx::xattr_name
+kvalue	fs/internal.h	/^	void *kvalue;$/;"	m	struct:xattr_ctx
 l_i_blocks_high	pxt4.h	/^			__le16	l_i_blocks_high; \/* were l_i_reserved1 *\/$/;"	m	struct:pxt4_inode::__anon7::__anon8
 l_i_checksum_lo	pxt4.h	/^			__le16	l_i_checksum_lo;\/* crc32c(uuid+inum+inode) LE *\/$/;"	m	struct:pxt4_inode::__anon7::__anon8
 l_i_file_acl_high	pxt4.h	/^			__le16	l_i_file_acl_high;$/;"	m	struct:pxt4_inode::__anon7::__anon8
@@ -1910,11 +1972,13 @@ l_i_gid_high	pxt4.h	/^			__le16	l_i_gid_high;	\/* were reserved2[0] *\/$/;"	m	st
 l_i_reserved	pxt4.h	/^			__le16	l_i_reserved;$/;"	m	struct:pxt4_inode::__anon7::__anon8
 l_i_uid_high	pxt4.h	/^			__le16	l_i_uid_high;	\/* these 2 fields *\/$/;"	m	struct:pxt4_inode::__anon7::__anon8
 l_i_version	pxt4.h	/^			__le32  l_i_version;$/;"	m	struct:pxt4_inode::__anon3::__anon4
+last	fs/namei.c	/^    struct qstr last;$/;"	m	struct:nameidata	typeref:struct:nameidata::qstr	file:
 last_block	migrate.c	/^	pxt4_lblk_t first_block, last_block, curr_block;$/;"	m	struct:migrate_struct	file:
 last_do_lblk	extents_status.c	/^	pxt4_lblk_t last_do_lblk;$/;"	m	struct:rsvd_count	file:
 last_page	inode.c	/^	pgoff_t last_page;	\/* Last page to examine *\/$/;"	m	struct:mpage_da_data	file:
 last_pblock	migrate.c	/^	pxt4_fsblk_t first_pblock, last_pblock;$/;"	m	struct:migrate_struct	file:
 last_pos	pxt4.h	/^	loff_t		last_pos;$/;"	m	struct:dir_private_info
+last_type	fs/namei.c	/^    int last_type;$/;"	m	struct:nameidata	file:
 lazy_itable_init	sysfs.c	/^PXT4_ATTR_FEATURE(lazy_itable_init);$/;"	v
 lblk	fast_commit.h	/^	pxt4_lblk_t lblk;$/;"	m	struct:pxt4_fc_alloc_region
 lblk	pxt4_extents.h	/^	pxt4_lblk_t lblk;   \/* logical block number within logical cluster *\/$/;"	m	struct:partial_cluster
@@ -1933,14 +1997,17 @@ li_request_list	pxt4.h	/^	struct list_head	li_request_list;$/;"	m	struct:pxt4_la
 li_state	pxt4.h	/^	unsigned long		li_state;$/;"	m	struct:pxt4_lazy_init
 lifetime_write_kbytes_show	sysfs.c	/^static ssize_t lifetime_write_kbytes_show(struct pxt4_sb_info *sbi, char *buf)$/;"	f	file:
 limit	namei.c	/^	__le16 limit;$/;"	m	struct:dx_countlimit	file:
+link	fs/namei.c	/^        struct path link;$/;"	m	struct:nameidata::saved	typeref:struct:nameidata::saved::path	file:
 linux1	pxt4.h	/^		} linux1;$/;"	m	union:pxt4_inode::__anon3	typeref:struct:pxt4_inode::__anon3::__anon4
 linux2	pxt4.h	/^		} linux2;$/;"	m	union:pxt4_inode::__anon7	typeref:struct:pxt4_inode::__anon7::__anon8
+list	fs/mount.h	/^	struct list_head	list;$/;"	m	struct:mnt_namespace	typeref:struct:mnt_namespace::list_head
 list	pxt4.h	/^	struct list_head	list;		\/* per-file finished IO list *\/$/;"	m	struct:pxt4_io_end	typeref:struct:pxt4_io_end::list_head
 list	pxt4.h	/^	struct list_head list;		\/* list of io_end_vec *\/$/;"	m	struct:pxt4_io_end_vec	typeref:struct:pxt4_io_end_vec::list_head
 list_vec	pxt4.h	/^	struct list_head	list_vec;	\/* list of pxt4_io_end_vec *\/$/;"	m	struct:pxt4_io_end	typeref:struct:pxt4_io_end::list_head
 lleft	pxt4.h	/^	pxt4_lblk_t lleft;$/;"	m	struct:pxt4_allocation_request
 lockdep_set_quota_inode	super.c	/^static void lockdep_set_quota_inode(struct inode *inode, int subclass)$/;"	f	file:
 logical	pxt4.h	/^	pxt4_lblk_t logical;$/;"	m	struct:pxt4_allocation_request
+lookup_flags	fs/internal.h	/^	int lookup_flags;$/;"	m	struct:open_flags
 lower_bound	inode-test.c	/^	bool lower_bound;$/;"	m	struct:timestamp_expectation	file:
 lr_first_not_zeroed	pxt4.h	/^	pxt4_group_t		lr_first_not_zeroed;$/;"	m	struct:pxt4_li_request
 lr_mode	pxt4.h	/^	enum pxt4_li_mode	lr_mode;$/;"	m	struct:pxt4_li_request	typeref:enum:pxt4_li_request::pxt4_li_mode
@@ -1950,13 +2017,18 @@ lr_request	pxt4.h	/^	struct list_head	lr_request;$/;"	m	struct:pxt4_li_request	t
 lr_super	pxt4.h	/^	struct super_block	*lr_super;$/;"	m	struct:pxt4_li_request	typeref:struct:pxt4_li_request::super_block
 lr_timeout	pxt4.h	/^	unsigned long		lr_timeout;$/;"	m	struct:pxt4_li_request
 lright	pxt4.h	/^	pxt4_lblk_t lright;$/;"	m	struct:pxt4_allocation_request
+m_count	fs/mount.h	/^	int m_count;$/;"	m	struct:mountpoint
+m_dentry	fs/mount.h	/^	struct dentry *m_dentry;$/;"	m	struct:mountpoint	typeref:struct:mountpoint::dentry
 m_flags	pxt4.h	/^	unsigned int m_flags;$/;"	m	struct:pxt4_map_blocks
+m_hash	fs/mount.h	/^	struct hlist_node m_hash;$/;"	m	struct:mountpoint	typeref:struct:mountpoint::hlist_node
 m_i_file_acl_high	pxt4.h	/^			__le16	m_i_file_acl_high;$/;"	m	struct:pxt4_inode::__anon7::__anon10
 m_i_reserved1	pxt4.h	/^			__u32  m_i_reserved1;$/;"	m	struct:pxt4_inode::__anon3::__anon6
 m_i_reserved2	pxt4.h	/^			__u32	m_i_reserved2[2];$/;"	m	struct:pxt4_inode::__anon7::__anon10
 m_lblk	pxt4.h	/^	pxt4_lblk_t m_lblk;$/;"	m	struct:pxt4_map_blocks
 m_len	pxt4.h	/^	unsigned int m_len;$/;"	m	struct:pxt4_map_blocks
+m_list	fs/mount.h	/^	struct hlist_head m_list;$/;"	m	struct:mountpoint	typeref:struct:mountpoint::hlist_head
 m_pblk	pxt4.h	/^	pxt4_fsblk_t m_pblk;$/;"	m	struct:pxt4_map_blocks
+m_seq	fs/namei.c	/^    unsigned seq, next_seq, m_seq, r_seq;$/;"	m	struct:nameidata	file:
 magic	super.c	/^	__u16 magic;$/;"	m	struct:pxt4_sb_encodings	file:
 make_indexed_dir	namei.c	/^static int make_indexed_dir(handle_t *handle, struct pxt4_filename *fname,$/;"	f	file:
 map	inode.c	/^	struct pxt4_map_blocks map;$/;"	m	struct:mpage_da_data	typeref:struct:mpage_da_data::pxt4_map_blocks	file:
@@ -2024,6 +2096,44 @@ mmp_seq	pxt4.h	/^	__le32	mmp_seq;		\/* Sequence no. updated periodically *\/$/;"
 mmp_struct	pxt4.h	/^struct mmp_struct {$/;"	s
 mmp_time	pxt4.h	/^	__le64	mmp_time;		\/* Time last updated *\/$/;"	m	struct:mmp_struct
 mmpd_data	pxt4.h	/^struct mmpd_data {$/;"	s
+mnt	fs/mount.h	/^	struct vfsmount mnt;$/;"	m	struct:mount	typeref:struct:mount::vfsmount
+mnt_child	fs/mount.h	/^	struct list_head mnt_child;	\/* and going through their mnt_child *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_count	fs/mount.h	/^	int mnt_count;$/;"	m	struct:mnt_pcp
+mnt_count	fs/mount.h	/^	int mnt_count;$/;"	m	struct:mount
+mnt_devname	fs/mount.h	/^	const char *mnt_devname;	\/* Name of device e.g. \/dev\/dsk\/hda1 *\/$/;"	m	struct:mount
+mnt_expire	fs/mount.h	/^	struct list_head mnt_expire;	\/* link in fs-specific expiry list *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_expiry_mark	fs/mount.h	/^	int mnt_expiry_mark;		\/* true if marked for expiry *\/$/;"	m	struct:mount
+mnt_fsnotify_marks	fs/mount.h	/^	struct fsnotify_mark_connector __rcu *mnt_fsnotify_marks;$/;"	m	struct:mount	typeref:struct:mount::__rcu
+mnt_fsnotify_mask	fs/mount.h	/^	__u32 mnt_fsnotify_mask;$/;"	m	struct:mount
+mnt_group_id	fs/mount.h	/^	int mnt_group_id;		\/* peer group identifier *\/$/;"	m	struct:mount
+mnt_has_parent	fs/mount.h	/^static inline int mnt_has_parent(struct mount *mnt)$/;"	f
+mnt_hash	fs/mount.h	/^	struct hlist_node mnt_hash;$/;"	m	struct:mount	typeref:struct:mount::hlist_node
+mnt_id	fs/mount.h	/^	int mnt_id;			\/* mount identifier *\/$/;"	m	struct:mount
+mnt_instance	fs/mount.h	/^	struct list_head mnt_instance;	\/* mount instance on sb->s_mounts *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_list	fs/mount.h	/^	struct list_head mnt_list;$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_llist	fs/mount.h	/^		struct llist_node mnt_llist;$/;"	m	union:mount::__anon28	typeref:struct:mount::__anon28::llist_node
+mnt_master	fs/mount.h	/^	struct mount *mnt_master;	\/* slave is on master->mnt_slave_list *\/$/;"	m	struct:mount	typeref:struct:mount::mount
+mnt_mountpoint	fs/mount.h	/^	struct dentry *mnt_mountpoint;$/;"	m	struct:mount	typeref:struct:mount::dentry
+mnt_mounts	fs/mount.h	/^	struct list_head mnt_mounts;	\/* list of children, anchored here *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_mp	fs/mount.h	/^	struct mountpoint *mnt_mp;	\/* where is it mounted *\/$/;"	m	struct:mount	typeref:struct:mount::mountpoint
+mnt_mp_list	fs/mount.h	/^		struct hlist_node mnt_mp_list;	\/* list mounts with the same mountpoint *\/$/;"	m	union:mount::__anon29	typeref:struct:mount::__anon29::hlist_node
+mnt_namespace	fs/mount.h	/^struct mnt_namespace {$/;"	s
+mnt_ns	fs/mount.h	/^	struct mnt_namespace *mnt_ns;	\/* containing namespace *\/$/;"	m	struct:mount	typeref:struct:mount::mnt_namespace
+mnt_parent	fs/mount.h	/^	struct mount *mnt_parent;$/;"	m	struct:mount	typeref:struct:mount::mount
+mnt_pcp	fs/mount.h	/^	struct mnt_pcp __percpu *mnt_pcp;$/;"	m	struct:mount	typeref:struct:mount::__percpu
+mnt_pcp	fs/mount.h	/^struct mnt_pcp {$/;"	s
+mnt_pins	fs/mount.h	/^	struct hlist_head mnt_pins;$/;"	m	struct:mount	typeref:struct:mount::hlist_head
+mnt_rcu	fs/mount.h	/^		struct rcu_head mnt_rcu;$/;"	m	union:mount::__anon28	typeref:struct:mount::__anon28::rcu_head
+mnt_share	fs/mount.h	/^	struct list_head mnt_share;	\/* circular list of shared mounts *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_slave	fs/mount.h	/^	struct list_head mnt_slave;	\/* slave list entry *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_slave_list	fs/mount.h	/^	struct list_head mnt_slave_list;\/* list of slave mounts *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_stuck_children	fs/mount.h	/^	struct hlist_head mnt_stuck_children;$/;"	m	struct:mount	typeref:struct:mount::hlist_head
+mnt_umount	fs/mount.h	/^		struct hlist_node mnt_umount;$/;"	m	union:mount::__anon29	typeref:struct:mount::__anon29::hlist_node
+mnt_umounting	fs/mount.h	/^	struct list_head mnt_umounting; \/* list entry for umount propagation *\/$/;"	m	struct:mount	typeref:struct:mount::list_head
+mnt_writers	fs/mount.h	/^	int mnt_writers;$/;"	m	struct:mnt_pcp
+mnt_writers	fs/mount.h	/^	int mnt_writers;$/;"	m	struct:mount
+mode	fs/internal.h	/^	umode_t mode;$/;"	m	struct:open_flags
+mount	fs/mount.h	/^struct mount {$/;"	s
 mount_opt	super.c	/^	int	mount_opt;$/;"	m	struct:mount_opts	file:
 mount_opt	super.c	/^PXT4_CLEAR_CTX(mount_opt);$/;"	v
 mount_opt	super.c	/^PXT4_SET_CTX(mount_opt);$/;"	v
@@ -2032,6 +2142,8 @@ mount_opt2	super.c	/^PXT4_CLEAR_CTX(mount_opt2);$/;"	v
 mount_opt2	super.c	/^PXT4_SET_CTX(mount_opt2);$/;"	v
 mount_opt2	super.c	/^PXT4_TEST_CTX(mount_opt2);$/;"	v
 mount_opts	super.c	/^static const struct mount_opts {$/;"	s	file:
+mountpoint	fs/mount.h	/^struct mountpoint {$/;"	s
+mounts	fs/mount.h	/^	unsigned int		mounts; \/* # of mounts in the namespace *\/$/;"	m	struct:mnt_namespace
 move_extent_per_page	move_extent.c	/^move_extent_per_page(struct file *o_filp, struct inode *donor_inode,$/;"	f	file:
 mpage_add_bh_to_extent	inode.c	/^static bool mpage_add_bh_to_extent(struct mpage_da_data *mpd, pxt4_lblk_t lblk,$/;"	f	file:
 mpage_da_data	inode.c	/^struct mpage_da_data {$/;"	s	file:
@@ -2047,7 +2159,39 @@ mpage_process_page_bufs	inode.c	/^static int mpage_process_page_bufs(struct mpag
 mpage_release_unused_pages	inode.c	/^static void mpage_release_unused_pages(struct mpage_da_data *mpd,$/;"	f	file:
 mpage_submit_folio	inode.c	/^static int mpage_submit_folio(struct mpage_da_data *mpd, struct folio *folio)$/;"	f	file:
 msb_set	inode-test.c	/^	bool msb_set;$/;"	m	struct:timestamp_expectation	file:
+my_alloc_empty_file	fs/namei.c	/^struct file *my_alloc_empty_file(int flags, const struct cred *cred)$/;"	f
+my_alloc_fd	fs/file.c	/^int my_alloc_fd(unsigned start, unsigned end, unsigned flags)$/;"	f
+my_alloc_fdtable	fs/file.c	/^static struct fdtable * my_alloc_fdtable(unsigned int nr)$/;"	f	file:
+my_build_open_how	fs/open.c	/^struct open_how my_build_open_how(int flags, umode_t mode)$/;"	f
+my_copy_fd_bitmaps	fs/file.c	/^static void my_copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,$/;"	f	file:
+my_copy_fdtable	fs/file.c	/^static void my_copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)$/;"	f	file:
+my_do_filp_open	fs/namei.c	/^EXPORT_SYMBOL(my_do_filp_open);$/;"	v
+my_do_filp_open	fs/namei.c	/^struct file *my_do_filp_open(int dfd, struct filename *pathname, const struct open_flags *op)$/;"	f
+my_do_sys_open	fs/open.c	/^long my_do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)$/;"	f
+my_do_sys_openat2	fs/open.c	/^static long my_do_sys_openat2(int dfd, const char __user *filename, struct open_how *how)$/;"	f	file:
+my_find_next_fd	fs/file.c	/^unsigned int my_find_next_fd(struct fdtable *fdt, unsigned int start)$/;"	f
+my_find_next_zero_bit	fs/file.c	/^unsigned long my_find_next_zero_bit(const unsigned long *addr, unsigned long size,$/;"	f	file:
+my_free_fdtable_rcu	fs/file.c	/^static void my_free_fdtable_rcu(struct rcu_head *rcu)$/;"	f	file:
+my_get_unused_fd_flags	fs/file.c	/^EXPORT_SYMBOL(my_get_unused_fd_flags);$/;"	v
+my_get_unused_fd_flags	fs/file.c	/^int my_get_unused_fd_flags(unsigned flags)$/;"	f
+my_legitimize_links	fs/namei.c	/^static bool my_legitimize_links(struct nameidata *nd)$/;"	f	file:
+my_legitimize_path	fs/namei.c	/^static inline bool my_legitimize_path(struct nameidata *nd,$/;"	f	file:
+my_legitimize_root	fs/namei.c	/^static bool my_legitimize_root(struct nameidata *nd)$/;"	f	file:
+my_link_path_walk	fs/namei.c	/^int my_link_path_walk(const char *name, struct nameidata *nd)$/;"	f
+my_lookup_fast	fs/namei.c	/^static struct dentry *my_lookup_fast(struct nameidata *nd)$/;"	f	file:
+my_lookup_open	fs/namei.c	/^static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,$/;"	f	file:
+my_open_last_lookups	fs/namei.c	/^const char *my_open_last_lookups(struct nameidata *nd,$/;"	f
+my_path_init	fs/namei.c	/^static const char *my_path_init(struct nameidata *nd, unsigned flags)$/;"	f	file:
+my_path_openat	fs/namei.c	/^EXPORT_SYMBOL(my_path_openat);$/;"	v
+my_path_openat	fs/namei.c	/^struct file* my_path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)$/;"	f
+my_step_into	fs/namei.c	/^static const char *my_step_into(struct nameidata *nd, int flags,$/;"	f	file:
+my_try_to_unlazy	fs/namei.c	/^static bool my_try_to_unlazy(struct nameidata *nd)$/;"	f	file:
+my_walk_component	fs/namei.c	/^static const char *my_walk_component(struct nameidata *nd, int flags)$/;"	f	file:
 name	dir.c	/^	char		name[];$/;"	m	struct:fname	file:
+name	fs/internal.h	/^	char name[XATTR_NAME_MAX + 1];$/;"	m	struct:xattr_name
+name	fs/namei.c	/^        const char *name;$/;"	m	struct:nameidata::saved	file:
+name	fs/namei.c	/^    const char *name;$/;"	m	struct:icc_path	file:
+name	fs/namei.c	/^    struct filename *name;$/;"	m	struct:nameidata	typeref:struct:nameidata::filename	file:
 name	pxt4.h	/^	char	name[PXT4_NAME_LEN];	\/* File name *\/$/;"	m	struct:pxt4_dir_entry
 name	pxt4.h	/^	char	name[PXT4_NAME_LEN];	\/* File name *\/$/;"	m	struct:pxt4_dir_entry_2
 name	super.c	/^	char *name;$/;"	m	struct:pxt4_sb_encodings	file:
@@ -2057,6 +2201,7 @@ name_len	dir.c	/^	__u8		name_len;$/;"	m	struct:fname	file:
 name_len	namei.c	/^	u8 name_len;$/;"	m	struct:fake_dirent	file:
 name_len	pxt4.h	/^	__le16	name_len;		\/* Name length *\/$/;"	m	struct:pxt4_dir_entry
 name_len	pxt4.h	/^	__u8	name_len;		\/* Name length *\/$/;"	m	struct:pxt4_dir_entry_2
+nameidata	fs/namei.c	/^struct nameidata {$/;"	s	file:
 names	namei.c	/^	unsigned names;$/;"	m	struct:stats	file:
 ndelonly	extents_status.c	/^	int ndelonly;$/;"	m	struct:rsvd_count	file:
 new_handle	jbd3/transaction.c	/^static handle_t *new_handle(int nblocks)$/;"	f	file:
@@ -2064,16 +2209,22 @@ next	dir.c	/^	struct fname	*next;$/;"	m	struct:fname	typeref:struct:fname::fname
 next_hash	pxt4.h	/^	__u32		next_hash;$/;"	m	struct:dir_private_info
 next_linear_group	mballoc.c	/^next_linear_group(struct pxt4_allocation_context *ac, pxt4_group_t group,$/;"	f	file:
 next_page	inode.c	/^	pgoff_t next_page;	\/* Current page to examine *\/$/;"	m	struct:mpage_da_data	file:
+next_seq	fs/namei.c	/^    unsigned seq, next_seq, m_seq, r_seq;$/;"	m	struct:nameidata	file:
 node	block_validity.c	/^	struct rb_node	node;$/;"	m	struct:pxt4_system_zone	typeref:struct:pxt4_system_zone::rb_node	file:
-nofree	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	e	enum:partial_cluster::__anon28
+node	fs/namei.c	/^    struct icc_node *node;$/;"	m	struct:icc_req	typeref:struct:icc_req::icc_node	file:
+nofree	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	e	enum:partial_cluster::__anon32
 not_found	xattr.h	/^	int not_found;$/;"	m	struct:pxt4_xattr_search
 note_qf_name	super.c	/^static int note_qf_name(struct fs_context *fc, int qtype,$/;"	f	file:
 nr_journal_heads	jbd3/journal.c	/^static atomic_t nr_journal_heads = ATOMIC_INIT(0);$/;"	v	file:
 nr_replays	jbd3/recovery.c	/^	int		nr_replays;$/;"	m	struct:recovery_info	file:
 nr_revoke_hits	jbd3/recovery.c	/^	int		nr_revoke_hits;$/;"	m	struct:recovery_info	file:
 nr_revokes	jbd3/recovery.c	/^	int		nr_revokes;$/;"	m	struct:recovery_info	file:
+ns	fs/mount.h	/^	struct mnt_namespace *ns;$/;"	m	struct:proc_mounts	typeref:struct:proc_mounts::mnt_namespace
+ns	fs/mount.h	/^	struct ns_common	ns;$/;"	m	struct:mnt_namespace	typeref:struct:mnt_namespace::ns_common
+ns_lock	fs/mount.h	/^	spinlock_t		ns_lock;$/;"	m	struct:mnt_namespace
 num_clusters_in_group	balloc.c	/^static unsigned int num_clusters_in_group(struct super_block *sb,$/;"	f	file:
 num_desc_blocks	resize.c	/^static int num_desc_blocks(struct super_block *sb, pxt4_group_t groups)$/;"	f	file:
+num_nodes	fs/namei.c	/^    size_t num_nodes;$/;"	m	struct:icc_path	file:
 ob_bh	pxt4.h	/^	struct buffer_head *ob_bh;	\/* Buffer for orphan block *\/$/;"	m	struct:pxt4_orphan_block	typeref:struct:pxt4_orphan_block::buffer_head
 ob_checksum	pxt4.h	/^	__le32 ob_checksum;$/;"	m	struct:pxt4_orphan_block_tail
 ob_free_entries	pxt4.h	/^	atomic_t ob_free_entries;	\/* Number of free orphan entries in block *\/$/;"	m	struct:pxt4_orphan_block
@@ -2087,6 +2238,8 @@ offset	pxt4.h	/^	unsigned long offset;$/;"	m	struct:pxt4_iloc
 offset	sysfs.c	/^		int offset;$/;"	m	union:pxt4_attr::__anon26	file:
 old_bump_val	sysfs.c	/^static unsigned int old_bump_val = 128;$/;"	v	file:
 op	fast_commit.c	/^	int op;$/;"	m	struct:__track_dentry_update_args	file:
+open_flag	fs/internal.h	/^	int open_flag;$/;"	m	struct:open_flags
+open_flags	fs/internal.h	/^struct open_flags {$/;"	s
 opt_flags	super.c	/^	unsigned int	opt_flags;	\/* MOPT flags *\/$/;"	m	struct:pxt4_fs_context	file:
 orlov_stats	ialloc.c	/^struct orlov_stats {$/;"	s	file:
 orphan_list_entry	super.c	/^static inline struct inode *orphan_list_entry(struct list_head *l)$/;"	f	file:
@@ -2124,10 +2277,14 @@ parse_apply_sb_mount_options	super.c	/^static int parse_apply_sb_mount_options(s
 parse_options	super.c	/^static int parse_options(struct fs_context *fc, char *options)$/;"	f	file:
 partial	extents_status.c	/^	bool partial;$/;"	m	struct:rsvd_count	file:
 partial_cluster	pxt4_extents.h	/^struct partial_cluster {$/;"	s
+path	fs/namei.c	/^    struct path path;$/;"	m	struct:nameidata	typeref:struct:nameidata::path	file:
 pblk	fast_commit.h	/^	pxt4_fsblk_t pblk;$/;"	m	struct:pxt4_fc_alloc_region
 pclu	pxt4_extents.h	/^	pxt4_fsblk_t pclu;  \/* physical cluster number *\/$/;"	m	struct:partial_cluster
+peak_bw	fs/namei.c	/^    u32 peak_bw;$/;"	m	struct:icc_req	file:
+pending_mounts	fs/mount.h	/^	unsigned int		pending_mounts;$/;"	m	struct:mnt_namespace
 pending_reservation	extents_status.h	/^struct pending_reservation {$/;"	s
 pleft	pxt4.h	/^	pxt4_fsblk_t pleft;$/;"	m	struct:pxt4_allocation_request
+poll	fs/mount.h	/^	wait_queue_head_t poll;$/;"	m	struct:mnt_namespace
 pos2maj_hash	dir.c	/^static inline __u32 pos2maj_hash(struct file *filp, loff_t pos)$/;"	f	file:
 pos2min_hash	dir.c	/^static inline __u32 pos2min_hash(struct file *filp, loff_t pos)$/;"	f	file:
 pright	pxt4.h	/^	pxt4_fsblk_t pright;$/;"	m	struct:pxt4_allocation_request
@@ -2135,10 +2292,12 @@ print_daily_error_info	super.c	/^static void print_daily_error_info(struct timer
 print_tstamp	sysfs.c	366;"	d	file:
 proc_dirname	sysfs.c	/^static const char proc_dirname[] = "fs\/pxt4";$/;"	v	file:
 proc_jbd3_stats	jbd3/journal.c	/^static struct proc_dir_entry *proc_jbd3_stats;$/;"	v	typeref:struct:proc_dir_entry	file:
+proc_mounts	fs/mount.h	/^struct proc_mounts {$/;"	s
 ptr	resize.c	/^	void *ptr;$/;"	m	struct:pxt4_rcu_ptr	file:
 ptr_explicit	sysfs.c	/^	ptr_explicit,$/;"	e	enum:__anon25	file:
 ptr_pxt4_sb_info_offset	sysfs.c	/^	ptr_pxt4_sb_info_offset,$/;"	e	enum:__anon25	file:
 ptr_pxt4_super_block_offset	sysfs.c	/^	ptr_pxt4_super_block_offset,$/;"	e	enum:__anon25	file:
+put_file_access	fs/internal.h	/^static inline void put_file_access(struct file *file)$/;"	f
 pxt2_feature_set_ok	super.c	/^static inline int pxt2_feature_set_ok(struct super_block *sb) { return 0; }$/;"	f	file:
 pxt2_feature_set_ok	super.c	/^static inline int pxt2_feature_set_ok(struct super_block *sb)$/;"	f	file:
 pxt2_fs_type	super.c	/^static struct file_system_type pxt2_fs_type = {$/;"	v	typeref:struct:file_system_type	file:
@@ -3475,6 +3634,7 @@ pxt4_zeroout_es	extents.c	/^static void pxt4_zeroout_es(struct inode *inode, str
 pxt4fs_dirhash	hash.c	/^int pxt4fs_dirhash(const struct inode *dir, const char *name, int len,$/;"	f
 qname_spec	super.c	/^	unsigned short	qname_spec;$/;"	m	struct:pxt4_fs_context	file:
 quotatypes	super.c	/^static const char * const quotatypes[] = INITQFNAMES;$/;"	v	file:
+r_seq	fs/namei.c	/^    unsigned seq, next_seq, m_seq, r_seq;$/;"	m	struct:nameidata	file:
 rb_hash	dir.c	/^	struct rb_node	rb_hash;$/;"	m	struct:fname	typeref:struct:fname::rb_node	file:
 rb_node	extents_status.h	/^	struct rb_node rb_node;$/;"	m	struct:extent_status	typeref:struct:extent_status::rb_node
 rb_node	extents_status.h	/^	struct rb_node rb_node;$/;"	m	struct:pending_reservation	typeref:struct:pending_reservation::rb_node
@@ -3482,7 +3642,9 @@ rcu	pxt4.h	/^	struct rcu_head rcu;$/;"	m	struct:pxt4_system_blocks	typeref:struc
 rcu	resize.c	/^	struct rcu_head rcu;$/;"	m	struct:pxt4_rcu_ptr	typeref:struct:pxt4_rcu_ptr::rcu_head	file:
 read_extent_tree_block	extents.c	592;"	d	file:
 read_mmp_block	mmp.c	/^static int read_mmp_block(struct super_block *sb, struct buffer_head **bh,$/;"	f	file:
+read_seqcount_retry	fs/namei.c	59;"	d	file:
 read_tag_block	jbd3/recovery.c	/^static inline unsigned long long read_tag_block(journal_t *journal,$/;"	f	file:
+real_mount	fs/mount.h	/^static inline struct mount *real_mount(struct vfsmount *mnt)$/;"	f
 rec_len	namei.c	/^	__le16 rec_len;$/;"	m	struct:fake_dirent	file:
 rec_len	pxt4.h	/^	__le16	rec_len;		\/* Directory entry length *\/$/;"	m	struct:pxt4_dir_entry
 rec_len	pxt4.h	/^	__le16	rec_len;		\/* Directory entry length *\/$/;"	m	struct:pxt4_dir_entry_2
@@ -3495,6 +3657,7 @@ register_as_pxt2	super.c	/^static inline void register_as_pxt2(void) { }$/;"	f	f
 register_as_pxt2	super.c	/^static inline void register_as_pxt2(void)$/;"	f	file:
 release_buffer_page	jbd3/commit.c	/^static void release_buffer_page(struct buffer_head *bh)$/;"	f	file:
 release_system_zone	block_validity.c	/^static void release_system_zone(struct pxt4_system_blocks *system_blks)$/;"	f	file:
+req_node	fs/namei.c	/^    struct hlist_node req_node;$/;"	m	struct:icc_req	typeref:struct:icc_req::hlist_node	file:
 reserve_backup_gdb	resize.c	/^static int reserve_backup_gdb(handle_t *handle, struct inode *inode,$/;"	f	file:
 reserved_blocks	pxt4.h	/^	__u16 reserved_blocks;$/;"	m	struct:pxt4_new_group_data
 reserved_blocks	pxt4.h	/^	u16 reserved_blocks;$/;"	m	struct:compat_pxt4_new_group_input
@@ -3502,8 +3665,12 @@ reserved_clusters_store	sysfs.c	/^static ssize_t reserved_clusters_store(struct 
 reserved_zero	namei.c	/^		__le32 reserved_zero;$/;"	m	struct:dx_root::dx_root_info	file:
 root	extents_status.h	/^	struct rb_root root;$/;"	m	struct:pxt4_es_tree	typeref:struct:pxt4_es_tree::rb_root
 root	extents_status.h	/^	struct rb_root root;$/;"	m	struct:pxt4_pending_tree	typeref:struct:pxt4_pending_tree::rb_root
+root	fs/mount.h	/^	struct mount *	root;$/;"	m	struct:mnt_namespace	typeref:struct:mnt_namespace::mount
+root	fs/mount.h	/^	struct path root;$/;"	m	struct:proc_mounts	typeref:struct:proc_mounts::path
+root	fs/namei.c	/^    struct path root;$/;"	m	struct:nameidata	typeref:struct:nameidata::path	file:
 root	pxt4.h	/^	struct rb_root	root;$/;"	m	struct:dir_private_info	typeref:struct:dir_private_info::rb_root
 root	pxt4.h	/^	struct rb_root root;$/;"	m	struct:pxt4_system_blocks	typeref:struct:pxt4_system_blocks::rb_root
+root_seq	fs/namei.c	/^    unsigned root_seq;$/;"	m	struct:nameidata	file:
 round_up_cluster	xattr.c	/^static inline size_t round_up_cluster(struct inode *inode, size_t length)$/;"	f	file:
 rsv_conversion_wq	pxt4.h	/^	struct workqueue_struct *rsv_conversion_wq;$/;"	m	struct:pxt4_sb_info	typeref:struct:pxt4_sb_info::workqueue_struct
 rsvd_count	extents_status.c	/^struct rsvd_count {$/;"	s	file:
@@ -3810,13 +3977,20 @@ s_writepages_rwsem	pxt4.h	/^	struct percpu_rw_semaphore s_writepages_rwsem;$/;"	
 s_wtime	pxt4.h	/^\/*30*\/	__le32	s_wtime;		\/* Write time *\/$/;"	m	struct:pxt4_super_block
 s_wtime_hi	pxt4.h	/^	__u8	s_wtime_hi;$/;"	m	struct:pxt4_super_block
 save_error_info	super.c	/^static void save_error_info(struct super_block *sb, int error,$/;"	f	file:
+saved	fs/namei.c	/^    struct nameidata *saved;$/;"	m	struct:nameidata	typeref:struct:nameidata::nameidata	file:
+saved	fs/namei.c	/^    struct saved {$/;"	s	struct:nameidata	file:
 sb	pxt4.h	/^	struct super_block *sb;  \/* super block of the fs *\/$/;"	m	struct:mmpd_data	typeref:struct:mmpd_data::super_block
 sb	pxt4.h	/^	struct super_block *sb;$/;"	m	struct:pxt4_journal_trigger	typeref:struct:pxt4_journal_trigger::super_block
+sb_end_ro_state_change	fs/internal.h	/^static inline void sb_end_ro_state_change(struct super_block *sb)$/;"	f
+sb_start_ro_state_change	fs/internal.h	/^static inline void sb_start_ro_state_change(struct super_block *sb)$/;"	f
 sbi_array_rcu_deref	pxt4.h	1793;"	d
 scan_revoke_records	jbd3/recovery.c	/^static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,$/;"	f	file:
 scanned_until_end	inode.c	/^	unsigned int scanned_until_end:1;$/;"	m	struct:mpage_da_data	file:
 search_dirblock	namei.c	/^static inline int search_dirblock(struct buffer_head *bh,$/;"	f	file:
 seed	pxt4.h	/^	u32		*seed;$/;"	m	struct:dx_hash_info
+seq	fs/mount.h	/^	u64			seq;	\/* Sequence number to prevent loops *\/$/;"	m	struct:mnt_namespace
+seq	fs/namei.c	/^        unsigned seq;$/;"	m	struct:nameidata::saved	file:
+seq	fs/namei.c	/^    unsigned seq, next_seq, m_seq, r_seq;$/;"	m	struct:nameidata	file:
 sequence	jbd3/revoke.c	/^	tid_t		  sequence;	\/* Used for recovery only *\/$/;"	m	struct:jbd3_revoke_record_s	file:
 session_write_kbytes_show	sysfs.c	/^static ssize_t session_write_kbytes_show(struct pxt4_sb_info *sbi, char *buf)$/;"	f	file:
 set_bitmap_uptodate	pxt4.h	/^static inline void set_bitmap_uptodate(struct buffer_head *bh)$/;"	f
@@ -3827,18 +4001,22 @@ set_opt2	pxt4.h	1252;"	d
 set_overhead	ioctl.c	/^static void set_overhead(struct pxt4_super_block *es, const void *arg)$/;"	f	file:
 setup_new_flex_group_blocks	resize.c	/^static int setup_new_flex_group_blocks(struct super_block *sb,$/;"	f	file:
 should_optimize_scan	mballoc.c	/^static inline int should_optimize_scan(struct pxt4_allocation_context *ac)$/;"	f	file:
+show	fs/mount.h	/^	int (*show)(struct seq_file *, struct vfsmount *);$/;"	m	struct:proc_mounts
 shrink_type	jbd3/checkpoint.c	/^enum shrink_type {SHRINK_DESTROY, SHRINK_BUSY_STOP, SHRINK_BUSY_SKIP};$/;"	g	file:
+size	fs/internal.h	/^	size_t size;$/;"	m	struct:xattr_ctx
 size	namei.c	/^	u16 size;$/;"	m	struct:dx_map_entry	file:
 size	pxt4.h	/^	ssize_t size;			\/* size of the extent *\/$/;"	m	struct:pxt4_io_end_vec
 skip_hole	extents.c	/^static int skip_hole(struct inode *inode, pxt4_lblk_t *cur)$/;"	f	file:
 space	namei.c	/^	unsigned space;$/;"	m	struct:stats	file:
 spec	super.c	/^	unsigned int	spec;$/;"	m	struct:pxt4_fs_context	file:
+stack	fs/namei.c	/^    } *stack, internal[EMBEDDED_LEVELS];$/;"	m	struct:nameidata	typeref:struct:nameidata::saved	file:
 start	fast_commit.c	/^	pxt4_lblk_t start, end;$/;"	m	struct:__track_range_args	file:
 start	jbd3/journal.c	/^	int start;$/;"	m	struct:jbd3_stats_proc_session	file:
 start_blk	block_validity.c	/^	pxt4_fsblk_t	start_blk;$/;"	m	struct:pxt4_system_zone	file:
 start_this_handle	jbd3/transaction.c	/^static int start_this_handle(journal_t *journal, handle_t *handle,$/;"	f	file:
 start_transaction	jbd3/recovery.c	/^	tid_t		start_transaction;$/;"	m	struct:recovery_info	file:
-state	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	m	struct:partial_cluster	typeref:enum:partial_cluster::__anon28
+state	fs/namei.c	/^    unsigned int flags, state;$/;"	m	struct:nameidata	file:
+state	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	m	struct:partial_cluster	typeref:enum:partial_cluster::__anon32
 stats	jbd3/journal.c	/^	struct transaction_stats_s *stats;$/;"	m	struct:jbd3_stats_proc_session	typeref:struct:jbd3_stats_proc_session::transaction_stats_s	file:
 stats	namei.c	/^struct stats$/;"	s	file:
 stop_this_handle	jbd3/transaction.c	/^static void stop_this_handle(handle_t *handle)$/;"	f	file:
@@ -3847,7 +4025,10 @@ str2hashbuf_unsigned	hash.c	/^static void str2hashbuf_unsigned(const char *msg, 
 sub_reserved_credits	jbd3/transaction.c	/^static void sub_reserved_credits(journal_t *journal, int blocks)$/;"	f	file:
 swap_inode_boot_loader	ioctl.c	/^static long swap_inode_boot_loader(struct super_block *sb,$/;"	f	file:
 swap_inode_data	ioctl.c	/^static void swap_inode_data(struct inode *inode1, struct inode *inode2)$/;"	f	file:
+sysctl_nr_open_max	fs/file.c	/^unsigned int sysctl_nr_open_max =$/;"	v
+sysctl_nr_open_min	fs/file.c	/^unsigned int sysctl_nr_open_min = BITS_PER_LONG;$/;"	v
 system_going_down	super.c	/^static bool system_going_down(void)$/;"	f	file:
+tag	fs/namei.c	/^    u32 tag;$/;"	m	struct:icc_req	file:
 tag2str	fast_commit.h	/^static inline const char *tag2str(__u16 tag)$/;"	f
 test_case_name	inode-test.c	/^	const char *test_case_name;$/;"	m	struct:timestamp_expectation	file:
 test_data	inode-test.c	/^static const struct timestamp_expectation test_data[] = {$/;"	v	typeref:struct:timestamp_expectation	file:
@@ -3858,14 +4039,16 @@ test_root	balloc.c	/^static inline int test_root(pxt4_group_t a, int b)$/;"	f	fi
 timestamp_expectation	inode-test.c	/^struct timestamp_expectation {$/;"	s	file:
 timestamp_expectation_to_desc	inode-test.c	/^static void timestamp_expectation_to_desc(const struct timestamp_expectation *t,$/;"	f	file:
 tl_to_darg	fast_commit.c	/^static inline void tl_to_darg(struct dentry_info_args *darg,$/;"	f	file:
-tofree	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	e	enum:partial_cluster::__anon28
+tofree	pxt4_extents.h	/^	enum {initial, tofree, nofree} state;$/;"	e	enum:partial_cluster::__anon32
 token	super.c	/^	int	token;$/;"	m	struct:mount_opts	file:
 token2str	super.c	/^static const char *token2str(int token)$/;"	f	file:
+total_link_count	fs/namei.c	/^    int total_link_count;$/;"	m	struct:nameidata	file:
 tr_triggers	pxt4.h	/^	struct jbd3_buffer_trigger_type tr_triggers;$/;"	m	struct:pxt4_journal_trigger	typeref:struct:pxt4_journal_trigger::jbd3_buffer_trigger_type
 transaction_cache	jbd3/transaction.c	/^static struct kmem_cache *transaction_cache;$/;"	v	typeref:struct:kmem_cache	file:
 trigger_test_error	sysfs.c	/^static ssize_t trigger_test_error(struct pxt4_sb_info *sbi,$/;"	f	file:
 u	mballoc.h	/^	} u;$/;"	m	struct:pxt4_prealloc_space	typeref:union:pxt4_prealloc_space::__anon17
 u	sysfs.c	/^	} u;$/;"	m	struct:pxt4_attr	typeref:union:pxt4_attr::__anon26	file:
+ucounts	fs/mount.h	/^	struct ucounts		*ucounts;$/;"	m	struct:mnt_namespace	typeref:struct:mnt_namespace::ucounts
 unnote_qf_name	super.c	/^static int unnote_qf_name(struct fs_context *fc, int qtype)$/;"	f	file:
 unregister_as_ext3	super.c	/^static inline void unregister_as_ext3(void)$/;"	f	file:
 unregister_as_pxt2	super.c	/^static inline void unregister_as_pxt2(void) { }$/;"	f	file:
@@ -3881,11 +4064,13 @@ update_t_max_wait	jbd3/transaction.c	/^static inline void update_t_max_wait(tran
 update_tind_extent_range	migrate.c	/^static int update_tind_extent_range(handle_t *handle, struct inode *inode,$/;"	f	file:
 used_dirs	ialloc.c	/^	__u32 used_dirs;$/;"	m	struct:orlov_stats	file:
 used_dirs	pxt4.h	/^	atomic_t	used_dirs;$/;"	m	struct:flex_groups
+user_ns	fs/mount.h	/^	struct user_namespace	*user_ns;$/;"	m	struct:mnt_namespace	typeref:struct:mnt_namespace::user_namespace
 usr_fname	pxt4.h	/^	const struct qstr *usr_fname;$/;"	m	struct:pxt4_filename	typeref:struct:pxt4_filename::qstr
 uuid_is_zero	crypto.c	/^static bool uuid_is_zero(__u8 u[16])$/;"	f	file:
 vals_s_flags	super.c	/^	unsigned long	vals_s_flags;	\/* Bits to set in s_flags *\/$/;"	m	struct:pxt4_fs_context	file:
 vals_s_mount_opt	super.c	/^	unsigned int	vals_s_mount_opt;$/;"	m	struct:pxt4_fs_context	file:
 vals_s_mount_opt2	super.c	/^	unsigned int	vals_s_mount_opt2;$/;"	m	struct:pxt4_fs_context	file:
+value	fs/internal.h	/^		void __user *value;$/;"	m	union:xattr_ctx::__anon30
 value	xattr.h	/^	const void *value;$/;"	m	struct:pxt4_xattr_info
 value_len	xattr.h	/^	size_t value_len;$/;"	m	struct:pxt4_xattr_info
 verify_group_input	resize.c	/^static int verify_group_input(struct super_block *sb,$/;"	f	file:
@@ -3905,5 +4090,7 @@ write_mmp_block_thawed	mmp.c	/^static int write_mmp_block_thawed(struct super_bl
 write_one_revoke_record	jbd3/revoke.c	/^static void write_one_revoke_record(transaction_t *transaction,$/;"	f	file:
 write_tag_block	jbd3/commit.c	/^static void write_tag_block(journal_t *j, journal_block_tag_t *tag,$/;"	f	file:
 xattr_check_inode	xattr.c	319;"	d	file:
+xattr_ctx	fs/internal.h	/^struct xattr_ctx {$/;"	s
 xattr_find_entry	xattr.c	/^xattr_find_entry(struct inode *inode, struct pxt4_xattr_entry **pentry,$/;"	f	file:
+xattr_name	fs/internal.h	/^struct xattr_name {$/;"	s
 xattr_sem	pxt4.h	/^	struct rw_semaphore xattr_sem;$/;"	m	struct:pxt4_inode_info	typeref:struct:pxt4_inode_info::rw_semaphore

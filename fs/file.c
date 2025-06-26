@@ -26,7 +26,6 @@ unsigned int sysctl_nr_open_min = BITS_PER_LONG;
 unsigned int sysctl_nr_open_max =
     __const_min(INT_MAX, ~(size_t)0/sizeof(void *)) & -BITS_PER_LONG;
 
-extern int expand_files(struct files_struct *files, unsigned int nr);
 extern inline void __set_close_on_exec(unsigned int fd, struct fdtable *fdt);
 extern inline void __clear_close_on_exec(unsigned int fd, struct fdtable *fdt);
 
@@ -200,14 +199,18 @@ static void my_copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
     unsigned int cpy, set;
 
     cpy = count / BITS_PER_BYTE;
+    printk("[%s]: cpy= %u\n", __func__, cpy); // test code
     set = (nfdt->max_fds - count) / BITS_PER_BYTE;
+    printk("[%s]: set= %u\n", __func__, set); // test code
     memcpy(nfdt->open_fds, ofdt->open_fds, cpy);
     memset((char *)nfdt->open_fds + cpy, 0, set);
     memcpy(nfdt->close_on_exec, ofdt->close_on_exec, cpy);
     memset((char *)nfdt->close_on_exec + cpy, 0, set);
 
     cpy = BITBIT_SIZE(count);
+    printk("[%s]: cpy= %u\n", __func__, cpy); // test code
     set = BITBIT_SIZE(nfdt->max_fds) - cpy;
+    printk("[%s]: set= %u\n", __func__, set); // test code
     memcpy(nfdt->full_fds_bits, ofdt->full_fds_bits, cpy);
     memset((char *)nfdt->full_fds_bits + cpy, 0, set);
 }
@@ -219,7 +222,9 @@ static void my_copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)
     BUG_ON(nfdt->max_fds < ofdt->max_fds);
 
     cpy = ofdt->max_fds * sizeof(struct file *);
+    printk("[%s]: cpy= %lu\n", __func__, cpy); // test code
     set = (nfdt->max_fds - ofdt->max_fds) * sizeof(struct file *);
+    printk("[%s]: set= %lu\n", __func__, set); // test code
     memcpy(nfdt->fd, ofdt->fd, cpy);
     memset((char *)nfdt->fd + cpy, 0, set);
 

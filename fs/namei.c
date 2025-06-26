@@ -59,6 +59,21 @@
 #define read_seqcount_retry(s, start)                   \
     do_read_seqcount_retry(seqprop_ptr(s), start)
 
+// === test code start ===
+#define PRINT_BINARY64(num) do { \
+    unsigned long long _num = (num); \
+    char _binary[65]; \
+    int _i; \
+    _binary[64] = '\0'; \
+    for (_i = 63; _i >= 0; _i--) { \
+        _binary[_i] = (_num & 1ULL) ? '1' : '0'; \
+        _num >>= 1; \
+    } \
+    printk(KERN_INFO "Binary64 of %llu (0x%llx): %s\n", \
+           (unsigned long long)(num), (unsigned long long)(num), _binary); \
+} while(0)
+// === test code end ===
+
 enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};
 
 /* sysctl tunables... */
@@ -473,8 +488,28 @@ struct dentry *__my_d_lookup_rcu(const struct dentry *parent,
         *seqp = seq;
 
         // === test code begin ===
-        if(dentry){
+        if(dentry && dentry->d_name.name){
             printk("[%s]: dentry: %s", __func__, dentry->d_name.name);
+        } else if(!dentry) {
+            printk("[%s]: dentry is null", __func__);
+        } else {
+            printk("[%s]: dentry->d_name.name is null", __func__);
+        }
+        // === test code end ===
+
+        // === test code begin ===
+		// print addresses of dentry struct and its members
+		if(dentry) {
+			printk("[%s]: dentry base addr: %p\n", __func__, dentry);
+			printk("[%s]: address of dentry->d_name: %p\n", __func__, &dentry->d_name);
+			printk("[%s]: address of dentry->d_hash: %p\n", __func__, &dentry->d_hash);
+			
+            if(dentry->d_parent) {
+				printk("[%s]: address of dentry->d_parent: %p\n", __func__, &dentry->d_parent);
+			}
+			if(dentry->d_inode) {
+                printk("[%s]: address of dentry->d_inode: %p\n", __func__, &dentry->d_inode);
+            }
         } else {
             printk("[%s]: dentry is null", __func__);
         }
@@ -505,8 +540,8 @@ static struct dentry *my_lookup_fast(struct nameidata *nd)
             printk("[%s]: parent->d_name is null", __func__);
         }
 
-        if(nd && nd->last.hash_len){
-            printk("[%s]: nd->last.hash_len= %u\n", __func__, hashlen_len(nd->last.hash_len));
+        if(nd && nd->last.name){
+            printk("[%s]: nd->last.name= %s\n", __func__, nd->last.name);
         } else if(!nd){
             printk("[%s]: nd is null", __func__);
         } else {
@@ -626,12 +661,12 @@ static const char *my_walk_component(struct nameidata *nd, int flags)
      * parent relationships.
      */
 
-	 // === test code begin ===
+	// === test code begin ===
     if(nd) {
 		if(nd->path.dentry) {
         	printk("[%s]: nd->path.dentry= %s", __func__, nd->path.dentry->d_name.name);
 		} else {
-			printk("[%s]: nd->path.dentry is null)", __func__);
+			printk("[%s]: nd->path.dentry is null", __func__);
 		}
 		if(nd->last.hash_len) {
             printk("[%s]: nd->last.hash_len= %llu\n", __func__, (long long unsigned int)nd->last.hash_len);
@@ -654,6 +689,15 @@ static const char *my_walk_component(struct nameidata *nd, int flags)
         return handle_dots(nd, nd->last_type);
     }
     dentry = my_lookup_fast(nd);
+
+    // === test code begin ===
+    if(nd->path.dentry) {
+            printk("[%s]: (after my_lookup_fast)nd->path.dentry= %s", __func__, nd->path.dentry->d_name.name);
+    } else {
+            printk("[%s]: (after my_lookup_fast)nd->path.dentry is null", __func__);
+    }
+    // === test code end ===
+
     if (IS_ERR(dentry))
         return ERR_CAST(dentry);
     if (unlikely(!dentry)) {
@@ -724,7 +768,8 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
 
         hash_len = hash_name(nd->path.dentry, name);
 
-        printk("[%s]: (%dst iter)hash_len= %llu", __func__, test_cnt, hash_len);
+        // printk("[%s]: (%dst iter)hash_len= %llu", __func__, test_cnt, hash_len); // test code
+        PRINT_BINARY64(hash_len); // test code
 
         type = LAST_NORM;
         if (name[0] == '.') switch (hashlen_len(hash_len)) {
