@@ -81,6 +81,83 @@ static struct files_stat_struct files_stat = {
     .max_files = NR_FILE
 };
 
+#define HASH_MIX(x, y, a)   \
+    (   x ^= (a),   \
+    y ^= x, x = rol64(x,12),\
+    x += y, y = rol64(y,45),\
+    y *= 9          )
+
+/*
+ * Fold two longs into one 32-bit hash value.  This must be fast, but
+ * latency isn't quite as critical, as there is a fair bit of additional
+ * work done before the hash value is used.
+ */
+static inline unsigned int fold_hash(unsigned long x, unsigned long y)
+{
+    y ^= x * GOLDEN_RATIO_64;
+    y *= GOLDEN_RATIO_64;
+    return y >> 32;
+}
+
+struct word_at_a_time {
+    const unsigned long one_bits, high_bits;
+};
+
+#define WORD_AT_A_TIME_CONSTANTS { REPEAT_BYTE(0x01), REPEAT_BYTE(0x80) }
+
+/*
+ * Load an unaligned word from kernel space.
+ *
+ * In the (very unlikely) case of the word being a page-crosser
+ * and the next page not being mapped, take the exception and
+ * return zeroes in the non-existing part.
+ */
+static inline unsigned long load_unaligned_zeropad(const void *addr)
+{
+    unsigned long ret;
+
+    asm volatile(
+        "1: mov %[mem], %[ret]\n"
+        "2:\n"
+        _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_ZEROPAD)
+        : [ret] "=r" (ret)
+        : [mem] "m" (*(unsigned long *)addr));
+
+    return ret;
+}
+
+/* Return nonzero if it has a zero */
+static inline unsigned long has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c)
+{
+    unsigned long mask = ((a - c->one_bits) & ~a) & c->high_bits;
+    *bits = mask;
+    return mask;
+}
+
+static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits, const struct word_at_a_time *c)
+{
+    return bits;
+}
+
+static inline unsigned long create_zero_mask(unsigned long bits)
+{
+    bits = (bits - 1) & ~bits;
+    return bits >> 7;
+}
+
+/* The mask we created is directly usable as a bytemask */
+#define zero_bytemask(mask) (mask)
+
+static inline long count_masked_bytes(unsigned long mask)
+{
+    return mask*0x0001020304050608ul >> 56;
+}
+
+static inline unsigned long find_zero(unsigned long mask)
+{
+    return count_masked_bytes(mask);
+}
+
 struct nameidata {
     struct path path;
     struct qstr last;
@@ -710,6 +787,31 @@ static const char *my_walk_component(struct nameidata *nd, int flags)
     return my_step_into(nd, flags, dentry);
 }
 
+inline u64 my_hash_name(const void *salt, const char *name)
+{
+    unsigned long a = 0, b, x = 0, y = (unsigned long)salt;
+    unsigned long adata, bdata, mask, len;
+    const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
+
+    len = 0;
+    goto inside;
+
+    do {
+        HASH_MIX(x, y, a);
+        len += sizeof(unsigned long);
+inside:
+        a = load_unaligned_zeropad(name+len);
+        b = a ^ REPEAT_BYTE('/');
+    } while (!(has_zero(a, &adata, &constants) | has_zero(b, &bdata, &constants)));
+
+    adata = prep_zero_mask(a, adata, &constants);
+    bdata = prep_zero_mask(b, bdata, &constants);
+    mask = create_zero_mask(adata | bdata);
+    x ^= a & zero_bytemask(mask);
+
+    return hashlen_create(fold_hash(x, y), len + find_zero(mask));
+}
+
 int my_link_path_walk(const char *name, struct nameidata *nd)
 {
     int depth = 0; // depth <= nd->depth
@@ -766,7 +868,7 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         if (err)
             return err;
 
-        hash_len = hash_name(nd->path.dentry, name);
+        hash_len = my_hash_name(nd->path.dentry, name);
 
         // printk("[%s]: (%dst iter)hash_len= %llu", __func__, test_cnt, hash_len); // test code
         PRINT_BINARY64(hash_len); // test code
@@ -901,6 +1003,9 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
     int error, create_error = 0;
     umode_t mode = op->mode;
     DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
+
+    printk("[%s]: op->open_flag: %d", __func__, op->open_flag); // test code
+    printk("[%s]: op->mode: %d", __func__, op->mode); // test code
 
     if (unlikely(IS_DEADDIR(dir_inode)))
         return ERR_PTR(-ENOENT);
