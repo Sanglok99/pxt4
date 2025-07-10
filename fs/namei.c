@@ -286,6 +286,17 @@ static const char *my_path_init(struct nameidata *nd, unsigned flags)
 	/* Absolute pathname -- fetch the root (LOOKUP_IN_ROOT uses nd->dfd). */
 	if (*s == '/' && !(flags & LOOKUP_IN_ROOT)) {
 		error = nd_jump_root(nd);
+
+		// === test code begin ===
+        if(nd && nd->path.dentry->d_name.name) {
+            printk("[%s]: nd->path.dentry->d_name.name: %s", __func__, nd->path.dentry->d_name.name);
+        } else if(!nd) {
+            printk("[%s]: nd is null", __func__);
+        } else {
+            printk("[%s]: nd->path.dentry->d_name.name is null", __func__);
+        }
+        // === test code end ===
+
 		if (unlikely(error))
 			return ERR_PTR(error);
         return s;
@@ -296,7 +307,8 @@ static const char *my_path_init(struct nameidata *nd, unsigned flags)
         if (flags & LOOKUP_RCU) {
             struct fs_struct *fs = current->fs;
             unsigned seq;
-			
+		
+            // === test code begin ===
 			if(fs && fs->pwd.dentry->d_name.name) {
             	printk("[%s]: fs->pwd: %s", __func__, fs->pwd.dentry->d_name.name);
             } else if(!fs) {
@@ -304,6 +316,7 @@ static const char *my_path_init(struct nameidata *nd, unsigned flags)
             } else {
                 printk("[%s]: fs->pwd is null", __func__);
             }
+            // === test code end ===
 
             do {
                 seq = read_seqcount_begin(&fs->seq);
@@ -677,6 +690,52 @@ static const char *my_step_into(struct nameidata *nd, int flags,
     struct inode *inode;
     int err = handle_mounts(nd, dentry, &path);
 
+	// === test code begin ===
+	if(nd && nd->path.dentry) {
+        printk("[%s]: nd->path.dentry= %s\n", __func__, nd->path.dentry->d_name.name);
+    } else if(!nd) {
+        printk("[%s]: nd is null\n", __func__);
+    } else {
+        printk("[%s]: nd->path.dentry is null\n", __func__);
+    }
+
+    if(nd) {
+    	if(nd->last.hash_len) {
+            printk("[%s]: nd->last.hash_len= %llu\n", __func__, (long long unsigned int)nd->last.hash_len);
+        } else {
+            printk("[%s]: nd->last.hash_len is null\n", __func__);
+        }
+    } else {
+        printk("[%s]: nd is null\n", __func__);
+    }
+
+    if(nd) {
+        if(nd->last.name) {
+            printk("[%s]: nd->last.name= %s\n", __func__, nd->last.name);
+        } else {
+            printk("[%s]: nd->last.name is null\n", __func__);
+        }
+    } else {
+        printk("[%s]: nd is null\n", __func__);
+    }
+
+    if(dentry && dentry->d_name.name) {
+        printk("[%s]: dentry->d_name.name= %s\n", __func__, dentry->d_name.name);
+    } else if(!dentry) {
+        printk("[%s]: dentry is null\n", __func__);
+    } else {
+        printk("[%s]: dentry->d_name.name is null\n", __func__);
+    }
+
+    if(dentry && dentry->d_name.hash_len) {
+        printk("[%s]: dentry->d_name.hash_len= %llu\n", __func__, dentry->d_name.hash_len);
+    } else if(!dentry) {
+        printk("[%s]: dentry is null\n", __func__);
+    } else {
+        printk("[%s]: dentry->d_name.name is null\n", __func__);
+    }
+    // === test code end ===
+
     printk("[%s]: 1\n", __func__); // test code
 
     if (err < 0)
@@ -741,7 +800,8 @@ static const char *my_walk_component(struct nameidata *nd, int flags)
 	// === test code begin ===
     if(nd) {
 		if(nd->path.dentry) {
-        	printk("[%s]: nd->path.dentry= %s", __func__, nd->path.dentry->d_name.name);
+        	printk("[%s]: nd->path.dentry->d_name.name= %s", __func__, nd->path.dentry->d_name.name);
+        	printk("[%s]: nd->path.dentry->d_name.hash_len= %lld", __func__, nd->path.dentry->d_name.hash_len);
 		} else {
 			printk("[%s]: nd->path.dentry is null", __func__);
 		}
@@ -793,6 +853,18 @@ inline u64 my_hash_name(const void *salt, const char *name)
     unsigned long adata, bdata, mask, len;
     const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
 
+    // === test code begin ===
+    unsigned long val1 = ~0ul;
+    unsigned long val2 = 0xff;
+    unsigned long val3 = val1/val2;
+    printk("[%s]: ~0ul= 0x%lx\n", __func__, val1);
+    printk("[%s]: ~0ul= %lu\n", __func__, val1);
+    printk("[%s]: 0xff= %lu\n", __func__, val2);
+    printk("[%s]: 0xff= %lu\n", __func__, val3);
+
+    printk("[%s]: REPEAT_BYTE('/')= %lx\n", __func__, REPEAT_BYTE('/'));
+    // === test code end ===
+    
     len = 0;
     goto inside;
 
@@ -846,7 +918,7 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         return 0;
     }
         
-    printk("[%s]: start for loop", __func__);
+    printk("[%s]: start for loop", __func__); // test code
 
     /* At this point we know we have a real path component. */
     for(;;) {
@@ -871,7 +943,7 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         hash_len = my_hash_name(nd->path.dentry, name);
 
         // printk("[%s]: (%dst iter)hash_len= %llu", __func__, test_cnt, hash_len); // test code
-        PRINT_BINARY64(hash_len); // test code
+        // PRINT_BINARY64(hash_len); // test code
 
         type = LAST_NORM;
         if (name[0] == '.') switch (hashlen_len(hash_len)) {
@@ -899,6 +971,7 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         
         nd->last.hash_len = hash_len;
 
+        // === test code begin === 
         if(nd) {
             if(nd->last.hash_len) {
                 printk("[%s]: (%dst iter)nd->last.hash_len= %llu\n", __func__, test_cnt, (long long unsigned int)nd->last.hash_len);
@@ -908,9 +981,11 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         } else {
             printk("[%s]: nd is null", __func__);
         }
+        // === test code end ===
 
         nd->last.name = name;
 
+        // === test code begin === 
         if(nd) {
             if(nd->last.name) {
                 printk("[%s]: (%dst iter)nd->last.name= %s", __func__, test_cnt, nd->last.name);
@@ -920,16 +995,21 @@ int my_link_path_walk(const char *name, struct nameidata *nd)
         } else {
             printk("[%s]: nd is null", __func__);
         }
+        // === test code end ===
 
         nd->last_type = type;
 
+        // === test code begin === 
         if(nd) {
             printk("[%s]: (%dst iter)nd->last_type= %d", __func__, test_cnt, nd->last_type);
         } else {
             printk("[%s]: nd is null", __func__);
         }
+        // === test code end ===
 
         name += hashlen_len(hash_len);
+
+        printk("[%s]: hashlen_len(hash_len)= %u", __func__, hashlen_len(hash_len)); // test code
 
         // === test code begin === 
         if(!*name) {
@@ -1168,8 +1248,16 @@ const char *my_open_last_lookups(struct nameidata *nd,
     const char *res;
 
     if(nd){
-        if (nd->path.dentry) {
+        if (nd->path.dentry && nd->path.dentry->d_name.name) {
             printk("[%s]: nd->path.dentry=%s\n", __func__, nd->path.dentry->d_name.name);
+        } else if (!nd->path.dentry) {
+            printk("[%s]: nd->path.dentry is null", __func__);
+        } else {
+            printk("[%s]: nd->path.dentry->d_name.name is null", __func__);
+        }
+
+        if (nd->path.dentry->d_name.hash_len) {
+            printk("[%s]: nd->path.dentry->d_name.hash_len=%llu\n", __func__, nd->path.dentry->d_name.hash_len);
         } else {
             printk("[%s]: nd->path.dentry is null", __func__);
         }
@@ -1407,19 +1495,18 @@ struct file* my_path_openat(struct nameidata *nd, const struct open_flags *op, u
 }
 EXPORT_SYMBOL(my_path_openat);
 
-// gets the file struct corresponding to the filename
-// parameters:
-// return: file struct
 struct file *my_do_filp_open(int dfd, struct filename *pathname, const struct open_flags *op)
 {
-    printk("[%s]: start my_do_filp_open", __func__);
+    printk("[%s]: start my_do_filp_open", __func__); // test code
     struct nameidata nd;
     int flags = op->lookup_flags;
     struct file *filp;
 
+    printk("[%s]: pathname->name= %s\n", __func__, pathname->name); // test code
+
     set_nameidata(&nd, dfd, pathname, NULL);
     
-    printk("[%s]: (set_nameidate)total_link_count: %d\n", __func__, nd.total_link_count);
+    printk("[%s]: (set_nameidate)total_link_count: %d\n", __func__, nd.total_link_count); // test code
 
     filp = my_path_openat(&nd, op, flags | LOOKUP_RCU);
     if (unlikely(filp == ERR_PTR(-ECHILD)))
@@ -1427,7 +1514,7 @@ struct file *my_do_filp_open(int dfd, struct filename *pathname, const struct op
     if (unlikely(filp == ERR_PTR(-ESTALE)))
         filp = my_path_openat(&nd, op, flags | LOOKUP_REVAL);
     restore_nameidata();
-    printk("[%s]: finished restore_nameidata(): ", __func__);
+    printk("[%s]: finished restore_nameidata(): ", __func__); // test code
     return filp;
 }
 EXPORT_SYMBOL(my_do_filp_open);
