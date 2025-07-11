@@ -81,7 +81,7 @@ static struct files_stat_struct files_stat = {
     .max_files = NR_FILE
 };
 
-#define HASH_MIX(x, y, a)   \
+#define MY_HASH_MIX(x, y, a)   \
     (   x ^= (a),   \
     y ^= x, x = rol64(x,12),\
     x += y, y = rol64(y,45),\
@@ -92,10 +92,15 @@ static struct files_stat_struct files_stat = {
  * latency isn't quite as critical, as there is a fair bit of additional
  * work done before the hash value is used.
  */
-static inline unsigned int fold_hash(unsigned long x, unsigned long y)
+static inline unsigned int my_fold_hash(unsigned long x, unsigned long y)
 {
+    // printk("[%s]: x = 0x%lx\n", __func__, x); // test code
+    // printk("[%s]: y(before) = 0x%lx\n", __func__, y); // test code
     y ^= x * GOLDEN_RATIO_64;
+    // printk("[%s]: y(after 'y ^= x * GOLDEN_RATIO_64;')= 0x%lx\n", __func__, y); // test code
     y *= GOLDEN_RATIO_64;
+    // printk("[%s]: y(after 'y *= GOLDEN_RATIO_64;')= 0x%lx\n", __func__, y); // test code
+    // printk("[%s]: (y >> 32)= 0x%lx\n", __func__, y >> 32); // test code
     return y >> 32;
 }
 
@@ -112,7 +117,7 @@ struct word_at_a_time {
  * and the next page not being mapped, take the exception and
  * return zeroes in the non-existing part.
  */
-static inline unsigned long load_unaligned_zeropad(const void *addr)
+static inline unsigned long my_load_unaligned_zeropad(const void *addr)
 {
     unsigned long ret;
 
@@ -127,33 +132,40 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
 }
 
 /* Return nonzero if it has a zero */
-static inline unsigned long has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c)
+static inline unsigned long my_has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c)
 {
     unsigned long mask = ((a - c->one_bits) & ~a) & c->high_bits;
+    // printk("[%s]: (a - c->one_bits)= 0x%lx\n", __func__, (a - c->one_bits)); // test code
+    // printk("[%s]: ((a - c->one_bits) & ~a)= 0x%lx\n", __func__, ((a - c->one_bits) & ~a)); // test code
+    // printk("[%s]: mask= 0x%lx\n", __func__, mask); // test code
     *bits = mask;
     return mask;
 }
 
-static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits, const struct word_at_a_time *c)
+static inline unsigned long my_prep_zero_mask(unsigned long a, unsigned long bits, const struct word_at_a_time *c)
 {
     return bits;
 }
 
-static inline unsigned long create_zero_mask(unsigned long bits)
+static inline unsigned long my_create_zero_mask(unsigned long bits)
 {
+    // printk("[%s]: (bits -1)= 0x%lx\n", __func__, (bits - 1)); // test code
+    // printk("[%s]: ~bits= 0x%lx\n", __func__, ~bits); // test code
     bits = (bits - 1) & ~bits;
+    // printk("[%s]: bits= 0x%lx\n", __func__, bits); // test code
+    // printk("[%s]: (bits >> 7)= 0x%lx\n", __func__, (bits >> 7)); // test code
     return bits >> 7;
 }
 
 /* The mask we created is directly usable as a bytemask */
-#define zero_bytemask(mask) (mask)
+#define my_zero_bytemask(mask) (mask)
 
 static inline long count_masked_bytes(unsigned long mask)
 {
     return mask*0x0001020304050608ul >> 56;
 }
 
-static inline unsigned long find_zero(unsigned long mask)
+static inline unsigned long my_find_zero(unsigned long mask)
 {
     return count_masked_bytes(mask);
 }
@@ -854,34 +866,49 @@ inline u64 my_hash_name(const void *salt, const char *name)
     const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
 
     // === test code begin ===
-    unsigned long val1 = ~0ul;
-    unsigned long val2 = 0xff;
-    unsigned long val3 = val1/val2;
-    printk("[%s]: ~0ul= 0x%lx\n", __func__, val1);
-    printk("[%s]: ~0ul= %lu\n", __func__, val1);
-    printk("[%s]: 0xff= %lu\n", __func__, val2);
-    printk("[%s]: 0xff= %lu\n", __func__, val3);
+    // unsigned long val1 = ~0ul;
+    // unsigned long val2 = 0xff;
+    // unsigned long val3 = val1/val2;
+    // printk("[%s]: ~0ul= 0x%lx\n", __func__, val1);
+    // printk("[%s]: ~0ul= %lu\n", __func__, val1);
+    // printk("[%s]: 0xff= %lu\n", __func__, val2);
+    // printk("[%s]: 0xff= %lu\n", __func__, val3);
 
-    printk("[%s]: REPEAT_BYTE('/')= %lx\n", __func__, REPEAT_BYTE('/'));
+    // printk("[%s]: REPEAT_BYTE('/')= %lx\n", __func__, REPEAT_BYTE('/'));
     // === test code end ===
     
     len = 0;
     goto inside;
 
     do {
-        HASH_MIX(x, y, a);
+        // printk("[%s]: MY_HASH_MIX() start\n", __func__); // test code
+        MY_HASH_MIX(x, y, a);
+        // printk("[%s]: MY_HASH_MIX() end\n", __func__); // test code
         len += sizeof(unsigned long);
 inside:
-        a = load_unaligned_zeropad(name+len);
+        a = my_load_unaligned_zeropad(name+len);
+        // printk("[%s]: a(the result of my_load_unaligned_zeropad())= 0x%lx\n", __func__, a); // test code
         b = a ^ REPEAT_BYTE('/');
-    } while (!(has_zero(a, &adata, &constants) | has_zero(b, &bdata, &constants)));
+        // printk("[%s]: b(the result of (a ^ REPEAT_BYTE('/')))= 0x%lx\n", __func__, b); // test code
+    } while (!(my_has_zero(a, &adata, &constants) | my_has_zero(b, &bdata, &constants)));
 
-    adata = prep_zero_mask(a, adata, &constants);
-    bdata = prep_zero_mask(b, bdata, &constants);
-    mask = create_zero_mask(adata | bdata);
-    x ^= a & zero_bytemask(mask);
+    // printk("[%s]: adata(before my_prep_zero_mask())= 0x%lx\n", __func__, adata); // test code
+    // printk("[%s]: bdata(before my_prep_zero_mask())= 0x%lx\n", __func__, bdata); // test code
 
-    return hashlen_create(fold_hash(x, y), len + find_zero(mask));
+    adata = my_prep_zero_mask(a, adata, &constants);
+    bdata = my_prep_zero_mask(b, bdata, &constants);
+    // printk("[%s]: adata(after my_prep_zero_mask())= 0x%lx\n", __func__, adata); // test code
+    // printk("[%s]: bdata(after my_prep_zero_mask())= 0x%lx\n", __func__, bdata); // test code
+    mask = my_create_zero_mask(adata | bdata);
+    // printk("[%s]: mask(after my_create_zero_mask())= 0x%lx\n", __func__, mask); // test code
+    // printk("[%s]: x(before)= 0x%lx\n", __func__, x); // test code
+    x ^= a & my_zero_bytemask(mask);
+    // printk("[%s]: x(after)= 0x%lx\n", __func__, x); // test code
+
+    // printk("[%s]: len= 0x%lx\n", __func__, len); // test code
+    // printk("[%s]: my_find_zero(mask)= 0x%lx\n", __func__, my_find_zero(mask)); // test code
+    // printk("[%s]: (len + my_find_zero(mask))= 0x%lx\n", __func__, (len + my_find_zero(mask))); // test code
+    return hashlen_create(my_fold_hash(x, y), len + my_find_zero(mask));
 }
 
 int my_link_path_walk(const char *name, struct nameidata *nd)
