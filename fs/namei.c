@@ -520,6 +520,55 @@ seqretry:
     return NULL;
 }
 
+static inline int my_dentry_string_cmp(const unsigned char *cs, const unsigned char *ct, unsigned tcount)
+{
+    unsigned long a,b,mask;
+
+    for (;;) {
+        a = read_word_at_a_time(cs);
+        b = my_load_unaligned_zeropad(ct);
+        if (tcount < sizeof(unsigned long))
+            break;
+        if (unlikely(a != b))
+            return 1;
+        cs += sizeof(unsigned long);
+        ct += sizeof(unsigned long);
+        tcount -= sizeof(unsigned long);
+        if (!tcount)
+            return 0;
+    }
+    mask = bytemask_from_count(tcount);
+    return unlikely(!!((a ^ b) & mask));
+}
+
+inline int my_dentry_cmp(const struct dentry *dentry, const unsigned char *ct, unsigned tcount)
+{
+    /*
+     * Be careful about RCU walk racing with rename:
+     * use 'READ_ONCE' to fetch the name pointer.
+     *
+     * NOTE! Even if a rename will mean that the length
+     * was not loaded atomically, we don't care. The
+     * RCU walk will check the sequence count eventually,
+     * and catch it. And we won't overrun the buffer,
+     * because we're reading the name pointer atomically,
+     * and a dentry name is guaranteed to be properly
+     * terminated with a NUL byte.
+     *
+     * End result: even if 'len' is wrong, we'll exit
+     * early because the data cannot match (there can
+     * be no NUL in the ct/tcount data)
+     */
+
+    printk("[%s]: ct= %s", __func__, ct); // test code
+
+    const unsigned char *cs = READ_ONCE(dentry->d_name.name);
+
+    printk("[%s]: cs= %s", __func__, cs); // test code
+    
+    return my_dentry_string_cmp(cs, ct, tcount);
+}
+
 struct dentry *__my_d_lookup_rcu(const struct dentry *parent,
                 const struct qstr *name,
                 unsigned *seqp)
@@ -585,7 +634,7 @@ struct dentry *__my_d_lookup_rcu(const struct dentry *parent,
             continue;
         if (dentry->d_name.hash_len != hashlen)
             continue;
-        if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
+        if (my_dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
             continue;
         *seqp = seq;
 
