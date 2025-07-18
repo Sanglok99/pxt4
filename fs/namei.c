@@ -46,8 +46,16 @@
 #include <linux/task_work.h>
 #include <linux/swap.h>
 #include <linux/kmemleak.h>
-
 #include <linux/atomic.h>
+#include <linux/ratelimit.h>
+#include <linux/mm.h>
+#include <linux/fscrypt.h>
+#include <linux/cache.h>
+#include <linux/seqlock.h>
+#include <linux/memblock.h>
+#include <linux/bit_spinlock.h>
+#include <linux/rculist_bl.h>
+#include <linux/list_lru.h>
 
 #define __getname()     kmem_cache_alloc(names_cachep, GFP_KERNEL)
 #define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
@@ -247,6 +255,7 @@ extern struct kmem_cache *filp_cachep;
 extern inline struct hlist_bl_head *d_hash(unsigned int hash);
 extern inline int dentry_cmp(const struct dentry *dentry, const unsigned char *ct, unsigned tcount);
 extern unsigned int d_hash_shift __read_mostly;
+extern __percpu long nr_dentry;
 
 static inline bool is_ext4_inode(struct inode *inode)
 {
@@ -591,8 +600,12 @@ struct dentry *__my_d_lookup_rcu(const struct dentry *parent,
      * Keep the two functions in sync.
      */
 
-    if (unlikely(parent->d_flags & DCACHE_OP_COMPARE))
+    printk("[%s]: 1\n", __func__); // test code
+    if (unlikely(parent->d_flags & DCACHE_OP_COMPARE)) {
+        printk("[%s]: 2\n", __func__); // test code
         return __my_d_lookup_rcu_op_compare(parent, name, seqp);
+    }
+    printk("[%s]: 3\n", __func__); // test code
 
     /*
      * The hash list is protected using RCU.
@@ -666,8 +679,12 @@ struct dentry *__my_d_lookup_rcu(const struct dentry *parent,
         }
         // === test code end ===
 
+        printk("[%s]: 4\n", __func__); // test code
+
         return dentry;
     }
+    printk("[%s]: 5\n", __func__); // test code
+    
     return NULL;
 }
 
@@ -1147,6 +1164,292 @@ OK:
     }
 }
 
+#define IN_LOOKUP_SHIFT 10
+static struct hlist_bl_head in_lookup_hashtable[1 << IN_LOOKUP_SHIFT];
+
+static inline struct hlist_bl_head *my_in_lookup_hash(const struct dentry *parent,
+                    unsigned int hash)
+{
+    hash += (unsigned long) parent / L1_CACHE_BYTES;
+    return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
+}
+
+static void my_d_wait_lookup(struct dentry *dentry)
+{
+    if (d_in_lookup(dentry)) {
+        DECLARE_WAITQUEUE(wait, current);
+        add_wait_queue(dentry->d_wait, &wait);
+        do {
+            set_current_state(TASK_UNINTERRUPTIBLE);
+            spin_unlock(&dentry->d_lock);
+            schedule();
+            spin_lock(&dentry->d_lock);
+        } while (d_in_lookup(dentry));
+    }
+}
+
+static struct kmem_cache *dentry_cache __read_mostly;
+
+struct external_name {
+    union {
+        atomic_t count;
+        struct rcu_head head;
+    } u;
+    unsigned char name[];
+};
+
+static inline int my_dname_external(const struct dentry *dentry)
+{
+    return dentry->d_name.name != dentry->d_iname;
+}
+
+static inline struct external_name *my_external_name(struct dentry *dentry)
+{
+    return container_of(dentry->d_name.name, struct external_name, name[0]);
+}
+
+static struct dentry *__my_d_alloc(struct super_block *sb, const struct qstr *name)
+{
+    struct dentry *dentry;
+    char *dname;
+    int err;
+
+    dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
+                      GFP_KERNEL);
+    if (!dentry)
+        return NULL;
+
+    /*
+     * We guarantee that the inline name is always NUL-terminated.
+     * This way the memcpy() done by the name switching in rename
+     * will still always have a NUL at the end, even if we might
+     * be overwriting an internal NUL character
+     */
+    dentry->d_iname[DNAME_INLINE_LEN-1] = 0;
+    if (unlikely(!name)) {
+        name = &slash_name;
+        dname = dentry->d_iname;
+    } else if (name->len > DNAME_INLINE_LEN-1) {
+        size_t size = offsetof(struct external_name, name[1]);
+        struct external_name *p = kmalloc(size + name->len,
+                          GFP_KERNEL_ACCOUNT |
+                          __GFP_RECLAIMABLE);
+        if (!p) {
+            kmem_cache_free(dentry_cache, dentry);
+            return NULL;
+        }
+        atomic_set(&p->u.count, 1);
+        dname = p->name;
+    } else  {
+        dname = dentry->d_iname;
+    }
+
+    dentry->d_name.len = name->len;
+    dentry->d_name.hash = name->hash;
+    memcpy(dname, name->name, name->len);
+    dname[name->len] = 0;
+
+    /* Make sure we always see the terminating NUL character */
+    smp_store_release(&dentry->d_name.name, dname); /* ^^^ */
+
+    dentry->d_lockref.count = 1;
+    dentry->d_flags = 0;
+    spin_lock_init(&dentry->d_lock);
+    seqcount_spinlock_init(&dentry->d_seq, &dentry->d_lock);
+    dentry->d_inode = NULL;
+    dentry->d_parent = dentry;
+    dentry->d_sb = sb;
+    dentry->d_op = NULL;
+    dentry->d_fsdata = NULL;
+    INIT_HLIST_BL_NODE(&dentry->d_hash);
+    INIT_LIST_HEAD(&dentry->d_lru);
+    INIT_LIST_HEAD(&dentry->d_subdirs);
+    INIT_HLIST_NODE(&dentry->d_u.d_alias);
+    INIT_LIST_HEAD(&dentry->d_child);
+    d_set_d_op(dentry, dentry->d_sb->s_d_op);
+
+    if (dentry->d_op && dentry->d_op->d_init) {
+        err = dentry->d_op->d_init(dentry);
+        if (err) {
+            if (my_dname_external(dentry))
+                kfree(my_external_name(dentry));
+            kmem_cache_free(dentry_cache, dentry);
+            return NULL;
+        }
+    }
+
+    this_cpu_inc(nr_dentry);
+
+    return dentry;
+}
+
+/* This must be called with d_lock held */
+static inline void __my_dget_dlock(struct dentry *dentry)
+{
+    dentry->d_lockref.count++;
+}
+
+struct dentry *my_d_alloc(struct dentry * parent, const struct qstr *name)
+{
+    struct dentry *dentry = __my_d_alloc(parent->d_sb, name);
+    if (!dentry)
+        return NULL;
+    spin_lock(&parent->d_lock);
+    /*
+     * don't need child lock because it is not subject
+     * to concurrency here
+     */
+    __my_dget_dlock(parent);
+    dentry->d_parent = parent;
+    list_add(&dentry->d_child, &parent->d_subdirs);
+    spin_unlock(&parent->d_lock);
+
+    return dentry;
+}
+
+struct dentry *my_d_alloc_parallel(struct dentry *parent,
+                const struct qstr *name,
+                wait_queue_head_t *wq)
+{
+    unsigned int hash = name->hash;
+    struct hlist_bl_head *b = my_in_lookup_hash(parent, hash);
+    struct hlist_bl_node *node;
+    struct dentry *new = d_alloc(parent, name); // TODO: change to my_d_alloc()
+    struct dentry *dentry;
+    unsigned seq, r_seq, d_seq;
+    
+    // === test code begin === 
+    if(parent && parent->d_name.name) {
+        printk("[%s]: parent->d_name.name= %s", __func__, parent->d_name.name);
+    }
+    if(name && name->name) {
+        printk("[%s]: name.name= %s", __func__, name->name);
+        printk("[%s]: name.hash_len= %llu", __func__, name->hash_len);  
+    }
+    if(new && new->d_name.name) {
+        printk("[%s]: new->d_name.name= %s", __func__, new->d_name.name);
+    }
+    // === test code end ===
+
+    printk("[%s]: 1\n", __func__); // test code
+
+    if (unlikely(!new)) {
+        printk("[%s]: 2\n", __func__); // test code
+        return ERR_PTR(-ENOMEM);
+    }
+
+retry:
+    printk("[%s]: 3\n", __func__); // test code
+    rcu_read_lock();
+    seq = smp_load_acquire(&parent->d_inode->i_dir_seq);
+    r_seq = read_seqbegin(&rename_lock);
+    dentry = __d_lookup_rcu(parent, name, &d_seq);
+    if (unlikely(dentry)) {
+        printk("[%s]: 4\n", __func__); // test code
+        if (!lockref_get_not_dead(&dentry->d_lockref)) {
+            printk("[%s]: 5\n", __func__); // test code
+            rcu_read_unlock();
+            goto retry;
+        }
+        printk("[%s]: 6\n", __func__); // test code
+        if (read_seqcount_retry(&dentry->d_seq, d_seq)) {
+            printk("[%s]: 7\n", __func__); // test code
+            rcu_read_unlock();
+            dput(dentry);
+            goto retry;
+        }
+        printk("[%s]: 8\n", __func__); // test code
+        rcu_read_unlock();
+        dput(new);
+        return dentry;
+    }
+    printk("[%s]: 9\n", __func__); // test code
+    if (unlikely(read_seqretry(&rename_lock, r_seq))) {
+        printk("[%s]: 10\n", __func__); // test code
+        rcu_read_unlock();
+        goto retry;
+    }
+    printk("[%s]: 11\n", __func__); // test code
+
+    if (unlikely(seq & 1)) {
+        printk("[%s]: 12\n", __func__); // test code
+        rcu_read_unlock();
+        goto retry;
+    }
+    printk("[%s]: 13\n", __func__); // test code
+
+    hlist_bl_lock(b);
+    if (unlikely(READ_ONCE(parent->d_inode->i_dir_seq) != seq)) {
+        printk("[%s]: 14\n", __func__); // test code
+        hlist_bl_unlock(b);
+        rcu_read_unlock();
+        goto retry;
+    }
+    printk("[%s]: 15\n", __func__); // test code
+    /*
+     * No changes for the parent since the beginning of d_lookup().
+     * Since all removals from the chain happen with hlist_bl_lock(),
+     * any potential in-lookup matches are going to stay here until
+     * we unlock the chain.  All fields are stable in everything
+     * we encounter.
+     */
+    hlist_bl_for_each_entry(dentry, node, b, d_u.d_in_lookup_hash) {
+        printk("[%s]: 16\n", __func__); // test code
+        if (dentry->d_name.hash != hash)
+            continue;
+        if (dentry->d_parent != parent)
+            continue;
+        if (!d_same_name(dentry, parent, name))
+            continue;
+        hlist_bl_unlock(b);
+        /* now we can try to grab a reference */
+        if (!lockref_get_not_dead(&dentry->d_lockref)) {
+            rcu_read_unlock();
+            goto retry;
+        }
+
+        rcu_read_unlock();
+        /*
+         * somebody is likely to be still doing lookup for it;
+         * wait for them to finish
+         */
+        spin_lock(&dentry->d_lock);
+        my_d_wait_lookup(dentry);
+        /*
+         * it's not in-lookup anymore; in principle we should repeat
+         * everything from dcache lookup, but it's likely to be what
+         * d_lookup() would've found anyway.  If it is, just return it;
+         * otherwise we really have to repeat the whole thing.
+         */
+        if (unlikely(dentry->d_name.hash != hash))
+            goto mismatch;
+        if (unlikely(dentry->d_parent != parent))
+            goto mismatch;
+        if (unlikely(d_unhashed(dentry)))
+            goto mismatch;
+        if (unlikely(!d_same_name(dentry, parent, name)))
+            goto mismatch;
+        /* OK, it *is* a hashed match; return it */
+        spin_unlock(&dentry->d_lock);
+        dput(new);
+        return dentry;
+    }
+    printk("[%s]: 17\n", __func__); // test code
+    rcu_read_unlock();
+    /* we can't take ->d_lock here; it's OK, though. */
+    new->d_flags |= DCACHE_PAR_LOOKUP;
+    new->d_wait = wq;
+    hlist_bl_add_head_rcu(&new->d_u.d_in_lookup_hash, b);
+    hlist_bl_unlock(b);
+    return new;
+mismatch:
+    printk("[%s]: 18\n", __func__); // test code
+    spin_unlock(&dentry->d_lock);
+    dput(dentry);
+    goto retry;
+}
+
+
 static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
                   const struct open_flags *op,
                   bool got_write)
@@ -1160,6 +1463,28 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
     umode_t mode = op->mode;
     DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
 
+    // === test code ===
+    if(nd && nd->path.dentry) {
+        printk("[%s]: nd->path.dentry: %s", __func__, nd->path.dentry->d_name.name);
+    } else if(!nd) {
+        printk("[%s]: nd is null", __func__);
+    } else {
+        printk("[%s]: nd->path.dentry is null", __func__);
+    }
+
+    if(nd->last.name) {
+        printk("[%s]: nd->last.name: %s", __func__, nd->last.name);
+    } else {
+        printk("[%s]: nd->last.name is null", __func__);
+    }
+
+    if(nd->last.hash_len) {
+        printk("[%s]: nd->last.hash_len= %llu\n", __func__, (long long unsigned int)nd->last.hash_len);
+    } else {
+        printk("[%s]: nd->last.hash_len is null", __func__);
+    }
+    // === test code end ===
+
     printk("[%s]: op->open_flag: %d", __func__, op->open_flag); // test code
     printk("[%s]: op->mode: %d", __func__, op->mode); // test code
 
@@ -1169,6 +1494,7 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
     file->f_mode &= ~FMODE_CREATED;
     dentry = d_lookup(dir, &nd->last);
 
+    // === test code ===
     if(dentry && dentry->d_name.name){
         printk("[%s]: dentry(d_lookup()'s result)= %s\n", __func__, dentry->d_name.name);
     } else if(!dentry) {
@@ -1176,10 +1502,11 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
     } else {
         printk("[%s]: dentry(d_lookup()'s result)->d_name is null", __func__);
     }
+    // === test code ===
 
     for (;;) {
         if (!dentry) {
-            dentry = d_alloc_parallel(dir, &nd->last, &wq);
+            dentry = my_d_alloc_parallel(dir, &nd->last, &wq);
 			
 			// === test code begin ===
            	if(dentry && dentry->d_name.name) {
@@ -1297,6 +1624,12 @@ static struct dentry *my_lookup_open(struct nameidata *nd, struct file *file,
 		// ================================ pxt4 entry point ================================
         error = dir_inode->i_op->create(idmap, dir_inode, dentry, mode, open_flag & O_EXCL);
 		// ==================================================================================
+
+        // === test code begin ===
+        if(dentry && dentry->d_inode && dentry->d_inode->i_ino) {
+            printk("[%s]: dentry->d_inode->i_ino= %lu", __func__, dentry->d_inode->i_ino);
+        }
+        // === test code end ===
 
         if (error)
             goto out_dput;
