@@ -255,7 +255,8 @@ extern struct kmem_cache *filp_cachep;
 extern inline struct hlist_bl_head *d_hash(unsigned int hash);
 extern inline int dentry_cmp(const struct dentry *dentry, const unsigned char *ct, unsigned tcount);
 extern unsigned int d_hash_shift __read_mostly;
-extern __percpu long nr_dentry;
+DECLARE_PER_CPU(long, nr_dentry);
+extern struct kmem_cache *dentry_cache;
 
 static inline bool is_ext4_inode(struct inode *inode)
 {
@@ -536,6 +537,13 @@ static inline int my_dentry_string_cmp(const unsigned char *cs, const unsigned c
     for (;;) {
         a = read_word_at_a_time(cs);
         b = my_load_unaligned_zeropad(ct);
+
+        // === test code begin ===
+        printk("[%s]: a= %lu", __func__, a); // TODO: add printk code for a, b, tcount
+        printk("[%s]: b= %lu", __func__, b);
+        printk("[%s]: tcount= %u", __func__, tcount);
+        // === test code end ===
+
         if (tcount < sizeof(unsigned long))
             break;
         if (unlikely(a != b))
@@ -547,6 +555,13 @@ static inline int my_dentry_string_cmp(const unsigned char *cs, const unsigned c
             return 0;
     }
     mask = bytemask_from_count(tcount);
+    // === test code begin ===
+    printk("[%s]: mask= %lu", __func__, mask);
+    printk("[%s]: a^b= %lu", __func__, a^b);
+    printk("[%s]: (a ^ b) & mask= %lu", __func__, (a ^ b) & mask);
+    printk("[%s]: !((a ^ b) & mask)= %u", __func__, !((a ^ b) & mask));
+    printk("[%s]: !!((a ^ b) & mask)= %u", __func__, !!((a ^ b) & mask));
+    // === test code end ===
     return unlikely(!!((a ^ b) & mask));
 }
 
@@ -1188,8 +1203,6 @@ static void my_d_wait_lookup(struct dentry *dentry)
     }
 }
 
-static struct kmem_cache *dentry_cache __read_mostly;
-
 struct external_name {
     union {
         atomic_t count;
@@ -1213,6 +1226,17 @@ static struct dentry *__my_d_alloc(struct super_block *sb, const struct qstr *na
     struct dentry *dentry;
     char *dname;
     int err;
+
+    printk("[%s]: __my_d_alloc start\n", __func__); // test code
+    
+    // === test code begin ===
+    if (!sb) {
+        printk("[%s]: sb is null\n", __func__);
+        return NULL;
+    } else {
+        printk("[%s]: sb in not null\n", __func__); // test code
+    }
+    // === test code end ===
 
     dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
                       GFP_KERNEL);
@@ -1292,6 +1316,9 @@ static inline void __my_dget_dlock(struct dentry *dentry)
 struct dentry *my_d_alloc(struct dentry * parent, const struct qstr *name)
 {
     struct dentry *dentry = __my_d_alloc(parent->d_sb, name);
+ 
+    printk("[%s]: my_d_alloc start\n", __func__); // test code
+
     if (!dentry)
         return NULL;
     spin_lock(&parent->d_lock);
@@ -1314,10 +1341,11 @@ struct dentry *my_d_alloc_parallel(struct dentry *parent,
     unsigned int hash = name->hash;
     struct hlist_bl_head *b = my_in_lookup_hash(parent, hash);
     struct hlist_bl_node *node;
-    struct dentry *new = d_alloc(parent, name); // TODO: change to my_d_alloc()
+    struct dentry *new = my_d_alloc(parent, name); // TODO: change to my_d_alloc()
     struct dentry *dentry;
     unsigned seq, r_seq, d_seq;
     
+    /*
     // === test code begin === 
     if(parent && parent->d_name.name) {
         printk("[%s]: parent->d_name.name= %s", __func__, parent->d_name.name);
@@ -1330,62 +1358,63 @@ struct dentry *my_d_alloc_parallel(struct dentry *parent,
         printk("[%s]: new->d_name.name= %s", __func__, new->d_name.name);
     }
     // === test code end ===
+    */
 
-    printk("[%s]: 1\n", __func__); // test code
+    // printk("[%s]: 1\n", __func__); // test code
 
     if (unlikely(!new)) {
-        printk("[%s]: 2\n", __func__); // test code
+        // printk("[%s]: 2\n", __func__); // test code
         return ERR_PTR(-ENOMEM);
     }
 
 retry:
-    printk("[%s]: 3\n", __func__); // test code
+    // printk("[%s]: 3\n", __func__); // test code
     rcu_read_lock();
     seq = smp_load_acquire(&parent->d_inode->i_dir_seq);
     r_seq = read_seqbegin(&rename_lock);
     dentry = __d_lookup_rcu(parent, name, &d_seq);
     if (unlikely(dentry)) {
-        printk("[%s]: 4\n", __func__); // test code
+        // printk("[%s]: 4\n", __func__); // test code
         if (!lockref_get_not_dead(&dentry->d_lockref)) {
-            printk("[%s]: 5\n", __func__); // test code
+            // printk("[%s]: 5\n", __func__); // test code
             rcu_read_unlock();
             goto retry;
         }
-        printk("[%s]: 6\n", __func__); // test code
+        // printk("[%s]: 6\n", __func__); // test code
         if (read_seqcount_retry(&dentry->d_seq, d_seq)) {
-            printk("[%s]: 7\n", __func__); // test code
+            // printk("[%s]: 7\n", __func__); // test code
             rcu_read_unlock();
             dput(dentry);
             goto retry;
         }
-        printk("[%s]: 8\n", __func__); // test code
+        // printk("[%s]: 8\n", __func__); // test code
         rcu_read_unlock();
         dput(new);
         return dentry;
     }
-    printk("[%s]: 9\n", __func__); // test code
+    // printk("[%s]: 9\n", __func__); // test code
     if (unlikely(read_seqretry(&rename_lock, r_seq))) {
-        printk("[%s]: 10\n", __func__); // test code
+        // printk("[%s]: 10\n", __func__); // test code
         rcu_read_unlock();
         goto retry;
     }
-    printk("[%s]: 11\n", __func__); // test code
+    // printk("[%s]: 11\n", __func__); // test code
 
     if (unlikely(seq & 1)) {
-        printk("[%s]: 12\n", __func__); // test code
+        // printk("[%s]: 12\n", __func__); // test code
         rcu_read_unlock();
         goto retry;
     }
-    printk("[%s]: 13\n", __func__); // test code
+    // printk("[%s]: 13\n", __func__); // test code
 
     hlist_bl_lock(b);
     if (unlikely(READ_ONCE(parent->d_inode->i_dir_seq) != seq)) {
-        printk("[%s]: 14\n", __func__); // test code
+        // printk("[%s]: 14\n", __func__); // test code
         hlist_bl_unlock(b);
         rcu_read_unlock();
         goto retry;
     }
-    printk("[%s]: 15\n", __func__); // test code
+    // printk("[%s]: 15\n", __func__); // test code
     /*
      * No changes for the parent since the beginning of d_lookup().
      * Since all removals from the chain happen with hlist_bl_lock(),
@@ -1394,7 +1423,7 @@ retry:
      * we encounter.
      */
     hlist_bl_for_each_entry(dentry, node, b, d_u.d_in_lookup_hash) {
-        printk("[%s]: 16\n", __func__); // test code
+        // printk("[%s]: 16\n", __func__); // test code
         if (dentry->d_name.hash != hash)
             continue;
         if (dentry->d_parent != parent)
@@ -1434,7 +1463,7 @@ retry:
         dput(new);
         return dentry;
     }
-    printk("[%s]: 17\n", __func__); // test code
+    // printk("[%s]: 17\n", __func__); // test code
     rcu_read_unlock();
     /* we can't take ->d_lock here; it's OK, though. */
     new->d_flags |= DCACHE_PAR_LOOKUP;
@@ -1443,7 +1472,7 @@ retry:
     hlist_bl_unlock(b);
     return new;
 mismatch:
-    printk("[%s]: 18\n", __func__); // test code
+    // printk("[%s]: 18\n", __func__); // test code
     spin_unlock(&dentry->d_lock);
     dput(dentry);
     goto retry;

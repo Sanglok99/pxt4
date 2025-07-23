@@ -2846,15 +2846,17 @@ EXPORT_SYMBOL(pxt4_add_nondir); // open_syscall_module
 static int pxt4_create(struct mnt_idmap *idmap, struct inode *dir,
 		       struct dentry *dentry, umode_t mode, bool excl)
 {
-    printk("[%s]: 1 start\n", __func__);
+    printk("[%s]: 0\n", __func__);
     dump_stack();
 	handle_t *handle;
 	struct inode *inode;
 	int err, credits, retries = 0;
 
 	err = dquot_initialize(dir);
-	if (err)
+	if (err) {
+        printk("[%s]: 1\n", __func__);
 		return err;
+    }
 
 	credits = (PXT4_DATA_TRANS_BLOCKS(dir->i_sb) +
 		   PXT4_INDEX_EXTRA_TRANS_BLOCKS + 3);
