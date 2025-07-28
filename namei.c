@@ -2846,46 +2846,52 @@ EXPORT_SYMBOL(pxt4_add_nondir); // open_syscall_module
 static int pxt4_create(struct mnt_idmap *idmap, struct inode *dir,
 		       struct dentry *dentry, umode_t mode, bool excl)
 {
-    printk("[%s]: 0\n", __func__);
-    dump_stack();
 	handle_t *handle;
 	struct inode *inode;
 	int err, credits, retries = 0;
 
+	printk("[%s]: dir->i_ino= %lu\n", __func__, dir->i_ino); // test code
+
+	// dump_stack(); // test code
+    printk("[%s]: 0\n", __func__); // test code
+
 	err = dquot_initialize(dir);
 	if (err) {
-        printk("[%s]: 1\n", __func__);
+        printk("[%s]: 1\n", __func__); // test code
 		return err;
-    }
+    	}
 
 	credits = (PXT4_DATA_TRANS_BLOCKS(dir->i_sb) +
 		   PXT4_INDEX_EXTRA_TRANS_BLOCKS + 3);
 retry:
 	inode = pxt4_new_inode_start_handle(idmap, dir, mode, &dentry->d_name,
 					    0, NULL, PXT4_HT_DIR, credits);
+
+	printk("[%s]: inode(pxt4_new_inode_start_handle()'s result)->i_ino= %lu\n", __func__, inode->i_ino); // test code
+
 	handle = pxt4_journal_current_handle();
 	err = PTR_ERR(inode);
 	if (!IS_ERR(inode)) {
-        printk("[%s]: 2\n", __func__);
+		printk("[%s]: 2\n", __func__); // test code
 		inode->i_op = &pxt4_file_inode_operations;
 		inode->i_fop = &pxt4_file_operations;
 		pxt4_set_aops(inode);
 		err = pxt4_add_nondir(handle, dentry, &inode);
 		if (!err) {
-            printk("[%s]: 3\n", __func__);
+         	printk("[%s]: 3\n", __func__); // test code
 			pxt4_fc_track_create(handle, dentry);
         }
 	}
 	if (handle) {
-        printk("[%s]: 4\n", __func__);
+        printk("[%s]: 4\n", __func__); // test code
 		pxt4_journal_stop(handle);
-    }
+	}
 	if (!IS_ERR_OR_NULL(inode)) { 
-        printk("[%s]: 5\n", __func__);
+        printk("[%s]: 5\n", __func__); // test code
 		iput(inode);
     }
 	if (err == -ENOSPC && pxt4_should_retry_alloc(dir->i_sb, &retries)) {
-        printk("[%s]: 6\n", __func__);
+        printk("[%s]: 6\n", __func__); // test code
 		goto retry;
     }
 	return err;

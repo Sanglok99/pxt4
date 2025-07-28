@@ -957,6 +957,8 @@ struct inode *__pxt4_new_inode(struct mnt_idmap *idmap,
 	struct pxt4_group_info *grp = NULL;
 	bool encrypt = false;
 
+    printk("[%s]: qstr->name= %s\n", __func__, qstr->name); // test code
+
 	/* Cannot create files in a deleted directory */
 	if (!dir || !dir->i_nlink)
 		return ERR_PTR(-EPERM);
@@ -972,6 +974,9 @@ struct inode *__pxt4_new_inode(struct mnt_idmap *idmap,
 	inode = new_inode(sb);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
+
+	printk("[%s]: inode->i_ino= %lu\n", __func__, inode->i_ino); // test code
+
 	ei = PXT4_I(inode);
 
 	/*
@@ -1029,6 +1034,9 @@ struct inode *__pxt4_new_inode(struct mnt_idmap *idmap,
 		ret2 = find_group_orlov(sb, dir, &group, mode, qstr);
 	else
 		ret2 = find_group_other(sb, dir, &group, mode);
+ 
+    printk("[%s]: ret2(find_group_other()'s result)= %d\n", __func__, ret2); // test code
+    printk("[%s]: group= %u\n", __func__, group); // test code
 
 got_group:
 	PXT4_I(dir)->i_last_alloc_group = group;
@@ -1076,6 +1084,10 @@ got_group:
 
 repeat_in_this_group:
 		ret2 = find_inode_bit(sb, group, inode_bitmap_bh, &ino);
+
+        printk("[%s]: ret2(find_inode_bit()'s result)= %d\n", __func__, ret2); // test code
+        printk("[%s]: ino(after find_inode_bit())= %lu\n", __func__, ino); // test code
+
 		if (!ret2)
 			goto next_group;
 
@@ -1107,7 +1119,11 @@ repeat_in_this_group:
 		}
 		pxt4_lock_group(sb, group);
 		ret2 = pxt4_test_and_set_bit(ino, inode_bitmap_bh->b_data);
-		if (ret2) {
+        
+        printk("[%s]: ret2(pxt4_test_and_set_bit()'s result)= %d\n", __func__, ret2); // test code
+        printk("[%s]: ino(after pxt4_test_and_set_bit())= %lu\n", __func__, ino); // test code
+		
+        if (ret2) {
 			/* Someone already took the bit. Repeat the search
 			 * with lock held.
 			 */
@@ -1121,7 +1137,10 @@ repeat_in_this_group:
 		}
 		pxt4_unlock_group(sb, group);
 		ino++;		/* the inode bitmap is zero-based */
-		if (!ret2)
+        
+        printk("[%s]: ino(after ino++)= %lu\n", __func__, ino); // test code
+		
+        if (!ret2)
 			goto got; /* we grabbed the inode! */
 
 		if (ino < PXT4_INODES_PER_GROUP(sb))
