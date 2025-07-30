@@ -275,6 +275,10 @@ struct pxt4_group_desc * pxt4_get_group_desc(struct super_block *sb,
 	struct pxt4_sb_info *sbi = PXT4_SB(sb);
 	struct buffer_head *bh_p;
 
+    // printk("number of group deescriptor blocks= %lu\n", sbi->s_gdb_count); // test code
+
+    // printk("[%s]: block_group= %u\n", __func__, block_group); // test code
+
 	if (block_group >= ngroups) {
 		pxt4_error(sb, "block_group >= groups_count - block_group = %u,"
 			   " groups_count = %u", block_group, ngroups);
@@ -283,9 +287,18 @@ struct pxt4_group_desc * pxt4_get_group_desc(struct super_block *sb,
 	}
 
 	group_desc = block_group >> PXT4_DESC_PER_BLOCK_BITS(sb);
-	offset = block_group & (PXT4_DESC_PER_BLOCK(sb) - 1);
+	
+    // printk("[%s]: group_desc= %u\n", __func__, group_desc); // test code
+    // printk("[%s]: PXT4_DESC_PER_BLOCK_BITS(sb)= %u\n", __func__, PXT4_DESC_PER_BLOCK_BITS(sb)); // test code
+
+    offset = block_group & (PXT4_DESC_PER_BLOCK(sb) - 1);
+
+    // printk("[%s]: offset= %u\n", __func__, offset); // test code
+    // printk("[%s]: PXT4_DESC_PER_BLOCK(sb)= %lu\n", __func__, PXT4_DESC_PER_BLOCK(sb)); // test code
+
 	bh_p = sbi_array_rcu_deref(sbi, s_group_desc, group_desc);
-	/*
+    
+    /*
 	 * sbi_array_rcu_deref returns with rcu unlocked, this is ok since
 	 * the pointer being dereferenced won't be dereferenced again. By
 	 * looking at the usage in add_new_gdb() the value isn't modified,
@@ -301,6 +314,12 @@ struct pxt4_group_desc * pxt4_get_group_desc(struct super_block *sb,
 	desc = (struct pxt4_group_desc *)(
 		(__u8 *)bh_p->b_data +
 		offset * PXT4_DESC_SIZE(sb));
+
+    // printk("[%s]: PXT4_DESC_SIZE(sb)= %lu\n", __func__, PXT4_DESC_SIZE(sb)); // test code
+
+    // printk("[%s]: bh_p->b_data address = %px\n", __func__, bh_p->b_data); // test code
+    // printk("[%s]: desc address         = %px\n", __func__, desc); // test code
+
 	if (bh)
 		*bh = bh_p;
 	return desc;

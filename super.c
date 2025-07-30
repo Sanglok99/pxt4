@@ -5698,6 +5698,7 @@ out_fail:
 
 static int pxt4_fill_super(struct super_block *sb, struct fs_context *fc)
 {
+    printk("[%s]: pxt4_fill_super() start\n", __func__); // test code
 	struct pxt4_fs_context *ctx = fc->fs_private;
 	struct pxt4_sb_info *sbi;
 	const char *descr;

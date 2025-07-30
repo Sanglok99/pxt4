@@ -584,6 +584,10 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
 	struct pxt4_group_desc *desc;
 	int flex_size = pxt4_flex_bg_size(PXT4_SB(sb));
 
+    printk("[%s]: parent_group= %u\n", __func__, parent_group); // test code
+    printk("[%s]: ngroups= %u\n", __func__, ngroups); // test code
+    printk("[%s]: flex_size= %d\n", __func__, ngroups); // test code
+
 	/*
 	 * Try to place the inode is the same flex group as its
 	 * parent.  If we can't find space, use the Orlov algorithm to
@@ -597,12 +601,20 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
 	try_again:
 		parent_group &= ~(flex_size-1);
 		last = parent_group + flex_size;
+
+        printk("[%s]: parent_group(after (&= ~(flex_size-1)))= %u\n", __func__, parent_group); // test code
+        printk("[%s]: last(after (last = parent_group + flex_size))= %u\n", __func__, last); // test code
+
 		if (last > ngroups)
 			last = ngroups;
-		for  (i = parent_group; i < last; i++) {
+        
+        printk("[%s]: last(after if(last > ngroups))= %u\n", __func__, last); // test code
+		
+        for  (i = parent_group; i < last; i++) {
 			desc = pxt4_get_group_desc(sb, i, NULL);
 			if (desc && pxt4_free_inodes_count(sb, desc)) {
 				*group = i;
+                printk("[%s]: group(in for loop)= %u\n", __func__, *group); // test code
 				return 0;
 			}
 		}
