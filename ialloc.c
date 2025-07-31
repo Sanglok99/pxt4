@@ -13,6 +13,8 @@
  *        David S. Miller (davem@caip.rutgers.edu), 1995
  */
 
+#include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/time.h>
 #include <linux/fs.h>
 #include <linux/stat.h>
@@ -23,6 +25,8 @@
 #include <linux/bitops.h>
 #include <linux/blkdev.h>
 #include <linux/cred.h>
+#include <linux/printk.h>
+#include <linux/stddef.h>
 
 #include <asm/byteorder.h>
 
@@ -969,7 +973,85 @@ struct inode *__pxt4_new_inode(struct mnt_idmap *idmap,
 	struct pxt4_group_info *grp = NULL;
 	bool encrypt = false;
 
-    printk("[%s]: qstr->name= %s\n", __func__, qstr->name); // test code
+	/*
+    // === test code begin ===
+    printk("[%s]: sizeof(ext4_group_desc)= %ld\n", __func__, sizeof(*gdp));
+    printk("[%s]: sizeof(bg_block_bitmap_lo)= %ld\n", __func__, sizeof(gdp->bg_block_bitmap_lo)); 
+    printk("[%s]: sizeof(bg_inode_bitmap_lo)= %ld\n", __func__, sizeof(gdp->bg_inode_bitmap_lo)); 
+    printk("[%s]: sizeof(bg_inode_table_lo)= %ld\n", __func__, sizeof(gdp->bg_inode_table_lo)); 
+    printk("[%s]: sizeof(bg_free_blocks_count_lo)= %ld\n", __func__, sizeof(gdp->bg_free_blocks_count_lo)); 
+    printk("[%s]: sizeof(bg_free_inodes_count_lo)= %ld\n", __func__, sizeof(gdp->bg_free_inodes_count_lo)); 
+    printk("[%s]: sizeof(bg_used_dirs_count_lo)= %ld\n", __func__, sizeof(gdp->bg_used_dirs_count_lo)); 
+    printk("[%s]: sizeof(bg_flags)= %ld\n", __func__, sizeof(gdp->bg_flags)); 
+    printk("[%s]: sizeof(bg_exclude_bitmap_lo)= %ld\n", __func__, sizeof(gdp->bg_exclude_bitmap_lo)); 
+    printk("[%s]: sizeof(bg_block_bitmap_csum_lo)= %ld\n", __func__, sizeof(gdp->bg_block_bitmap_csum_lo)); 
+    printk("[%s]: sizeof(bg_inode_bitmap_csum_lo)= %ld\n", __func__, sizeof(gdp->bg_inode_bitmap_csum_lo)); 
+    printk("[%s]: sizeof(bg_itable_unused_lo)= %ld\n", __func__, sizeof(gdp->bg_itable_unused_lo)); 
+    printk("[%s]: sizeof(bg_checksum)= %ld\n", __func__, sizeof(gdp->bg_checksum)); 
+    printk("[%s]: sizeof(bg_block_bitmap_hi)= %ld\n", __func__, sizeof(gdp->bg_block_bitmap_hi)); 
+    printk("[%s]: sizeof(bg_inode_bitmap_hi)= %ld\n", __func__, sizeof(gdp->bg_inode_bitmap_hi)); 
+    printk("[%s]: sizeof(bg_inode_table_hi)= %ld\n", __func__, sizeof(gdp->bg_inode_table_hi)); 
+    printk("[%s]: sizeof(bg_free_blocks_count_hi)= %ld\n", __func__, sizeof(gdp->bg_free_blocks_count_hi)); 
+    printk("[%s]: sizeof(bg_free_inodes_count_hi)= %ld\n", __func__, sizeof(gdp->bg_free_inodes_count_hi)); 
+    printk("[%s]: sizeof(bg_used_dirs_count_hi)= %ld\n", __func__, sizeof(gdp->bg_used_dirs_count_hi)); 
+    printk("[%s]: sizeof(bg_itable_unused_hi)= %ld\n", __func__, sizeof(gdp->bg_itable_unused_hi)); 
+    printk("[%s]: sizeof(bg_exclude_bitmap_hi)= %ld\n", __func__, sizeof(gdp->bg_exclude_bitmap_hi)); 
+    printk("[%s]: sizeof(bg_block_bitmap_csum_hi)= %ld\n", __func__, sizeof(gdp->bg_block_bitmap_csum_hi)); 
+    printk("[%s]: sizeof(bg_inode_bitmap_csum_hi)= %ld\n", __func__, sizeof(gdp->bg_inode_bitmap_csum_hi)); 
+    printk("[%s]: sizeof(bg_reserved)= %ld\n", __func__, sizeof(gdp->bg_reserved)); 
+    
+    printk("[%s]: &gdp                = %p\n", __func__, gdp);
+	printk("[%s]: &bg_block_bitmap_lo = %p\n", __func__, &gdp->bg_block_bitmap_lo);
+	printk("[%s]: &bg_inode_bitmap_lo = %p\n", __func__, &gdp->bg_inode_bitmap_lo);
+	printk("[%s]: &bg_inode_table_lo  = %p\n", __func__, &gdp->bg_inode_table_lo);
+	printk("[%s]: &bg_free_blocks_count_lo = %p\n", __func__, &gdp->bg_free_blocks_count_lo);
+	printk("[%s]: &bg_free_inodes_count_lo = %p\n", __func__, &gdp->bg_free_inodes_count_lo);
+	printk("[%s]: &bg_used_dirs_count_lo   = %p\n", __func__, &gdp->bg_used_dirs_count_lo);
+	printk("[%s]: &bg_flags           = %p\n", __func__, &gdp->bg_flags);
+	printk("[%s]: &bg_exclude_bitmap_lo    = %p\n", __func__, &gdp->bg_exclude_bitmap_lo);
+	printk("[%s]: &bg_block_bitmap_csum_lo = %p\n", __func__, &gdp->bg_block_bitmap_csum_lo);
+	printk("[%s]: &bg_inode_bitmap_csum_lo = %p\n", __func__, &gdp->bg_inode_bitmap_csum_lo);
+	printk("[%s]: &bg_itable_unused_lo     = %p\n", __func__, &gdp->bg_itable_unused_lo);
+	printk("[%s]: &bg_checksum        = %p\n", __func__, &gdp->bg_checksum);
+	printk("[%s]: &bg_block_bitmap_hi = %p\n", __func__, &gdp->bg_block_bitmap_hi);
+	printk("[%s]: &bg_inode_bitmap_hi = %p\n", __func__, &gdp->bg_inode_bitmap_hi);
+	printk("[%s]: &bg_inode_table_hi  = %p\n", __func__, &gdp->bg_inode_table_hi);
+	printk("[%s]: &bg_free_blocks_count_hi = %p\n", __func__, &gdp->bg_free_blocks_count_hi);
+	printk("[%s]: &bg_free_inodes_count_hi = %p\n", __func__, &gdp->bg_free_inodes_count_hi);
+	printk("[%s]: &bg_used_dirs_count_hi   = %p\n", __func__, &gdp->bg_used_dirs_count_hi);
+	printk("[%s]: &bg_itable_unused_hi     = %p\n", __func__, &gdp->bg_itable_unused_hi);
+	printk("[%s]: &bg_exclude_bitmap_hi    = %p\n", __func__, &gdp->bg_exclude_bitmap_hi);
+	printk("[%s]: &bg_block_bitmap_csum_hi = %p\n", __func__, &gdp->bg_block_bitmap_csum_hi);
+	printk("[%s]: &bg_inode_bitmap_csum_hi = %p\n", __func__, &gdp->bg_inode_bitmap_csum_hi);
+	printk("[%s]: &bg_reserved        = %p\n", __func__, &gdp->bg_reserved);
+
+	printk("[%s]: offset(bg_block_bitmap_lo) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_block_bitmap_lo));
+	printk("[%s]: offset(bg_inode_bitmap_lo) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_inode_bitmap_lo));
+	printk("[%s]: offset(bg_inode_table_lo)  = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_inode_table_lo));
+	printk("[%s]: offset(bg_free_blocks_count_lo) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_free_blocks_count_lo));
+	printk("[%s]: offset(bg_free_inodes_count_lo) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_free_inodes_count_lo));
+	printk("[%s]: offset(bg_used_dirs_count_lo)   = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_used_dirs_count_lo));
+	printk("[%s]: offset(bg_flags)           = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_flags));
+	printk("[%s]: offset(bg_exclude_bitmap_lo)    = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_exclude_bitmap_lo));
+	printk("[%s]: offset(bg_block_bitmap_csum_lo) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_block_bitmap_csum_lo));
+	printk("[%s]: offset(bg_inode_bitmap_csum_lo) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_inode_bitmap_csum_lo));
+	printk("[%s]: offset(bg_itable_unused_lo)     = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_itable_unused_lo));
+	printk("[%s]: offset(bg_checksum)        = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_checksum));
+	printk("[%s]: offset(bg_block_bitmap_hi) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_block_bitmap_hi));
+	printk("[%s]: offset(bg_inode_bitmap_hi) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_inode_bitmap_hi));
+	printk("[%s]: offset(bg_inode_table_hi)  = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_inode_table_hi));
+	printk("[%s]: offset(bg_free_blocks_count_hi) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_free_blocks_count_hi));
+	printk("[%s]: offset(bg_free_inodes_count_hi) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_free_inodes_count_hi));
+	printk("[%s]: offset(bg_used_dirs_count_hi)   = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_used_dirs_count_hi));
+	printk("[%s]: offset(bg_itable_unused_hi)     = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_itable_unused_hi));
+	printk("[%s]: offset(bg_exclude_bitmap_hi)    = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_exclude_bitmap_hi));
+	printk("[%s]: offset(bg_block_bitmap_csum_hi) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_block_bitmap_csum_hi));
+	printk("[%s]: offset(bg_inode_bitmap_csum_hi) = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_inode_bitmap_csum_hi));
+	printk("[%s]: offset(bg_reserved)        = %zu\n", __func__, offsetof(struct pxt4_group_desc, bg_reserved));
+    // === test code end ===
+	*/
+
+    // printk("[%s]: qstr->name= %s\n", __func__, qstr->name); // test code
 
 	/* Cannot create files in a deleted directory */
 	if (!dir || !dir->i_nlink)
