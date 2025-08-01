@@ -138,6 +138,8 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 	pxt4_fsblk_t bitmap_blk;
 	int err;
 
+    printk("[%s]: block_group= %u\n", __func__, block_group); // test code
+
 	desc = pxt4_get_group_desc(sb, block_group, NULL);
 	if (!desc)
 		return ERR_PTR(-EFSCORRUPTED);
@@ -590,7 +592,7 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
 
     printk("[%s]: parent_group= %u\n", __func__, parent_group); // test code
     printk("[%s]: ngroups= %u\n", __func__, ngroups); // test code
-    printk("[%s]: flex_size= %d\n", __func__, ngroups); // test code
+    printk("[%s]: flex_size= %d\n", __func__, flex_size); // test code
 
 	/*
 	 * Try to place the inode is the same flex group as its
