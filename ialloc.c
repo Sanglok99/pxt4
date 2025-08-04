@@ -34,6 +34,7 @@
 #include "pxt4_jbd3.h"
 #include "xattr.h"
 #include "acl.h"
+#include "fs/buffer_head.h"
 
 #include <trace/events/pxt4.h>
 
@@ -153,7 +154,7 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 					PXT4_GROUP_INFO_IBITMAP_CORRUPT);
 		return ERR_PTR(-EFSCORRUPTED);
 	}
-	bh = sb_getblk(sb, bitmap_blk);
+	bh = my_sb_getblk(sb, bitmap_blk);
 	if (unlikely(!bh)) {
 		pxt4_warning(sb, "Cannot read inode bitmap - "
 			     "block_group = %u, inode_bitmap = %llu",

@@ -18,7 +18,7 @@ pxt4-m += acl.o
 pxt4-m += xattr_security.o
 pxt4-m += verity.o
 
-pxt4-y	+= fs/open.o fs/namei.o fs/file.o
+pxt4-y	+= fs/open.o fs/namei.o fs/file.o fs/buffer.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
 PWD  := $(shell pwd)

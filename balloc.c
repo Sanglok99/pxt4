@@ -275,7 +275,7 @@ struct pxt4_group_desc * pxt4_get_group_desc(struct super_block *sb,
 	struct pxt4_sb_info *sbi = PXT4_SB(sb);
 	struct buffer_head *bh_p;
 
-    // printk("number of group deescriptor blocks= %lu\n", sbi->s_gdb_count); // test code
+    // printk("number of group descriptor blocks= %lu\n", sbi->s_gdb_count); // test code
 
     // printk("[%s]: block_group= %u\n", __func__, block_group); // test code
 
