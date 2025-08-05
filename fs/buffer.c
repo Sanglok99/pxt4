@@ -112,6 +112,15 @@ my_lookup_bh_lru(struct block_device *bdev, sector_t block, unsigned size)
         }
     }
     bh_lru_unlock();
+
+    // === test code begin ===
+    if(ret) {
+        printk("[%s]: ret is not NULL\n", __func__);
+    } else {
+        printk("[%s]: ret is NULL\n", __func__);
+    }
+    // === test code end ===
+
     return ret;
 }
 
@@ -222,13 +231,39 @@ __my_find_get_block(struct block_device *bdev, sector_t block, unsigned size)
 {
     struct buffer_head *bh = my_lookup_bh_lru(bdev, block, size);
 
+    // === test code ===
+    if(bh) {
+        printk("[%s]: bh(my_lookup_bh_lru()'s result) is not NULL", __func__); 
+    } else {
+        printk("[%s]: bh(my_lookup_bh_lru()'s result) is NULL", __func__); 
+    }
+    // === test code ===
+
     if (bh == NULL) {
         /* __find_get_block_slow will mark the page accessed */
         bh = __my_find_get_block_slow(bdev, block);
+        
+        // === test code ===
+        if(bh) {
+            printk("[%s]: bh(__my_find_get_block_slow()'s result) is not NULL", __func__); 
+        } else {
+            printk("[%s]: bh(__my_find_get_block_slow()'s result) is NULL", __func__); 
+        }
+        // === test code ===
+        
         if (bh)
             my_bh_lru_install(bh);
-    } else
+    } else {
         my_touch_buffer(bh);
+        
+        // === test code ===
+        if(bh) {
+            printk("[%s]: bh(my_touch_buffer()'s result) is not NULL", __func__); 
+        } else {
+            printk("[%s]: bh(my_touch_buffer()'s result) is NULL", __func__); 
+        }
+        // === test code ===
+    }
 
     return bh;
 }
@@ -366,11 +401,26 @@ __my_getblk_gfp(struct block_device *bdev, sector_t block,
                  unsigned size, gfp_t gfp)
 {
     struct buffer_head *bh = __my_find_get_block(bdev, block, size);
+    printk("[%s]: bdev->bd_disk->disk_name= %s\n", __func__, bdev->bd_disk->disk_name); // test code
+    printk("[%s]: block= %llu\n", __func__, block); // test code
+    printk("[%s]: block= %u\n", __func__, size); // test code
+
+    if(bh) {
+        printk("[%s]: bh is not NULL", __func__); // test code
+    } else {
+        printk("[%s]: bh is NULL", __func__); // test code
+    }
 
     might_sleep();
     if (bh == NULL)
         bh = __my_getblk_slow(bdev, block, size, gfp);
+   
+    if(bh) {
+        printk("[%s]: bh is not NULL", __func__); // test code
+    } else {
+        printk("[%s]: bh is NULL", __func__); // test code
+    }
+
     return bh;
 }
 EXPORT_SYMBOL(__my_getblk_gfp);
-

@@ -139,16 +139,24 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 	pxt4_fsblk_t bitmap_blk;
 	int err;
 
+    printk("[%s]: 0\n", __func__); // test code
     printk("[%s]: block_group= %u\n", __func__, block_group); // test code
 
 	desc = pxt4_get_group_desc(sb, block_group, NULL);
-	if (!desc)
+	if (!desc) {
+        printk("[%s]: 1\n", __func__); // test code
 		return ERR_PTR(-EFSCORRUPTED);
+    }
 
 	bitmap_blk = pxt4_inode_bitmap(sb, desc);
+    printk("[%s]: bitmap_blk= %llu\n", __func__, bitmap_blk); // test code
+
 	if ((bitmap_blk <= le32_to_cpu(sbi->s_es->s_first_data_block)) ||
 	    (bitmap_blk >= pxt4_blocks_count(sbi->s_es))) {
-		pxt4_error(sb, "Invalid inode bitmap blk %llu in "
+        
+        printk("[%s]: 2\n", __func__); // test code
+		
+        pxt4_error(sb, "Invalid inode bitmap blk %llu in "
 			   "block_group %u", bitmap_blk, block_group);
 		pxt4_mark_group_bitmap_corrupted(sb, block_group,
 					PXT4_GROUP_INFO_IBITMAP_CORRUPT);
@@ -156,16 +164,26 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 	}
 	bh = my_sb_getblk(sb, bitmap_blk);
 	if (unlikely(!bh)) {
-		pxt4_warning(sb, "Cannot read inode bitmap - "
+
+        printk("[%s]: 3\n", __func__); // test code
+		
+        pxt4_warning(sb, "Cannot read inode bitmap - "
 			     "block_group = %u, inode_bitmap = %llu",
 			     block_group, bitmap_blk);
 		return ERR_PTR(-ENOMEM);
 	}
-	if (bitmap_uptodate(bh))
+	if (bitmap_uptodate(bh)) {
+
+        printk("[%s]: 4\n", __func__); // test code
+
 		goto verify;
+    }
 
 	lock_buffer(bh);
 	if (bitmap_uptodate(bh)) {
+
+        printk("[%s]: 5\n", __func__); // test code
+
 		unlock_buffer(bh);
 		goto verify;
 	}
@@ -173,8 +191,14 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 	pxt4_lock_group(sb, block_group);
 	if (pxt4_has_group_desc_csum(sb) &&
 	    (desc->bg_flags & cpu_to_le16(PXT4_BG_INODE_UNINIT))) {
-		if (block_group == 0) {
-			pxt4_unlock_group(sb, block_group);
+        
+        printk("[%s]: 6\n", __func__); // test code
+		
+        if (block_group == 0) {
+            
+            printk("[%s]: 7\n", __func__); // test code
+			
+            pxt4_unlock_group(sb, block_group);
 			unlock_buffer(bh);
 			pxt4_error(sb, "Inode bitmap for bg 0 marked "
 				   "uninitialized");
@@ -198,7 +222,9 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 		 * if not uninit if bh is uptodate,
 		 * bitmap is also uptodate
 		 */
-		set_bitmap_uptodate(bh);
+        printk("[%s]: 8\n", __func__); // test code
+		
+        set_bitmap_uptodate(bh);
 		unlock_buffer(bh);
 		goto verify;
 	}
@@ -209,7 +235,10 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 	pxt4_read_bh(bh, REQ_META | REQ_PRIO, pxt4_end_bitmap_read);
 	pxt4_simulate_fail_bh(sb, bh, PXT4_SIM_IBITMAP_EIO);
 	if (!buffer_uptodate(bh)) {
-		put_bh(bh);
+        
+        printk("[%s]: 9\n", __func__); // test code
+		
+        put_bh(bh);
 		pxt4_error_err(sb, EIO, "Cannot read inode bitmap - "
 			       "block_group = %u, inode_bitmap = %llu",
 			       block_group, bitmap_blk);
@@ -219,12 +248,18 @@ pxt4_read_inode_bitmap(struct super_block *sb, pxt4_group_t block_group)
 	}
 
 verify:
-	err = pxt4_validate_inode_bitmap(sb, desc, block_group, bh);
-	if (err)
+    printk("[%s]: 10\n", __func__); // test code
+	
+    err = pxt4_validate_inode_bitmap(sb, desc, block_group, bh);
+	if (err) {
+        printk("[%s]: 11\n", __func__); // test code
 		goto out;
+    }
 	return bh;
 out:
-	put_bh(bh);
+    printk("[%s]: 12\n", __func__); // test code
+	
+    put_bh(bh);
 	return ERR_PTR(err);
 }
 EXPORT_SYMBOL(__tracepoint_pxt4_load_inode_bitmap); // open_syscall_module
