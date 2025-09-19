@@ -191,6 +191,19 @@ int pxt4_read_bh(struct buffer_head *bh, blk_opf_t op_flags, bh_end_io_t *end_io
 {
 	BUG_ON(!buffer_locked(bh));
 
+    // === test code begin ===
+    printk("[%s]: bh= %p\n", __func__, bh);
+    if(bh->b_folio) {
+        printk("[%s]: bh->b_folio= %p\n", __func__, bh->b_folio);
+    }
+    if(bh->b_page) {
+        printk("[%s]: bh->b_page= %p\n", __func__, bh->b_page);
+    }
+    if(bh->b_data) {
+        printk("[%s]: bh->b_data= %p\n", __func__, bh->b_data);
+    }
+    // === test code end ===
+
 	if (pxt4_buffer_uptodate(bh)) {
 		unlock_buffer(bh);
 		return 0;
@@ -316,6 +329,10 @@ pxt4_fsblk_t pxt4_block_bitmap(struct super_block *sb,
 pxt4_fsblk_t pxt4_inode_bitmap(struct super_block *sb,
 			       struct pxt4_group_desc *bg)
 {
+    printk("[%s]: le32_to_cpu(bg->bg_inode_bitmap_lo)= %u\n", __func__, le32_to_cpu(bg->bg_inode_bitmap_lo)); // test code
+    printk("[%s]: le32_to_cpu(bg->bg_inode_bitmap_hi)= %u\n", __func__, le32_to_cpu(bg->bg_inode_bitmap_hi)); // test code
+    printk("[%s]: PXT4_DESC_SIZE(sb)= %lu", __func__, PXT4_DESC_SIZE(sb)); // test code
+
 	return le32_to_cpu(bg->bg_inode_bitmap_lo) |
 		(PXT4_DESC_SIZE(sb) >= PXT4_MIN_DESC_SIZE_64BIT ?
 		 (pxt4_fsblk_t)le32_to_cpu(bg->bg_inode_bitmap_hi) << 32 : 0);

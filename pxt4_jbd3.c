@@ -4,6 +4,7 @@
  */
 
 #include "pxt4_jbd3.h"
+#include "fs/buffer_head.h"
 
 #include <trace/events/pxt4.h>
 
@@ -349,19 +350,40 @@ int __pxt4_handle_dirty_metadata(const char *where, unsigned int line,
 {
 	int err = 0;
 
+    printk("[%s]: 0\n", __func__); // test code
+
+    printk("[%s]: where= %s\n", __func__, where); // test code
+    printk("[%s]: line= %u\n", __func__, line); // test code
+
+    /*
+    // === test code begin ===
+    if(!handle) {
+        printk("[%s]: handle is NULL", __func__);
+    } else {
+        printk("[%s]: handle is not NULL", __func__);
+    }
+    // === test code end ===
+    */
+
 	might_sleep();
 
 	set_buffer_meta(bh);
 	set_buffer_prio(bh);
 	set_buffer_uptodate(bh);
 	if (pxt4_handle_valid(handle)) {
-		err = jbd3_journal_dirty_metadata(handle, bh);
+        printk("[%s]: 1\n", __func__); // test code
+		
+        err = jbd3_journal_dirty_metadata(handle, bh);
 		/* Errors can only happen due to aborted journal or a nasty bug */
 		if (!is_handle_aborted(handle) && WARN_ON_ONCE(err)) {
-			pxt4_journal_abort_handle(where, line, __func__, bh,
+            printk("[%s]: 2\n", __func__); // test code
+			
+            pxt4_journal_abort_handle(where, line, __func__, bh,
 						  handle, err);
 			if (inode == NULL) {
-				pr_err("PXT4: jbd3_journal_dirty_metadata "
+                printk("[%s]: 3\n", __func__); // test code
+				
+                pr_err("PXT4: jbd3_journal_dirty_metadata "
 				       "failed: handle type %u started at "
 				       "line %u, credits %u/%u, errcode %d",
 				       handle->h_type,
@@ -370,7 +392,9 @@ int __pxt4_handle_dirty_metadata(const char *where, unsigned int line,
 				       jbd3_handle_buffer_credits(handle), err);
 				return err;
 			}
-			pxt4_error_inode(inode, where, line,
+            printk("[%s]: 4\n", __func__); // test code
+			
+            pxt4_error_inode(inode, where, line,
 					 bh->b_blocknr,
 					 "journal_dirty_metadata failed: "
 					 "handle type %u started at line %u, "
@@ -382,14 +406,23 @@ int __pxt4_handle_dirty_metadata(const char *where, unsigned int line,
 					 err);
 		}
 	} else {
-		if (inode)
+        printk("[%s]: 5\n", __func__); // test code
+		if (inode) {
+            printk("[%s]: 6\n", __func__); // test code
 			mark_buffer_dirty_inode(bh, inode);
-		else
-			mark_buffer_dirty(bh);
+        }
+		else {
+            printk("[%s]: 7\n", __func__); // test code
+			my_mark_buffer_dirty(bh);
+        }
 		if (inode && inode_needs_sync(inode)) {
-			sync_dirty_buffer(bh);
+            printk("[%s]: 8\n", __func__); // test code
+			
+            sync_dirty_buffer(bh);
 			if (buffer_req(bh) && !buffer_uptodate(bh)) {
-				pxt4_error_inode_err(inode, where, line,
+                printk("[%s]: 9\n", __func__); // test code
+				
+                pxt4_error_inode_err(inode, where, line,
 						     bh->b_blocknr, EIO,
 					"IO error syncing itable block");
 				err = -EIO;

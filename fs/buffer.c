@@ -47,6 +47,12 @@
 extern void check_irqs_on(void);
 extern void link_dev_buffers(struct folio *folio, struct buffer_head *head);
 extern sector_t folio_init_buffers(struct folio *folio, struct block_device *bdev, sector_t block, int size);
+extern void folio_memcg_lock(struct folio *folio);
+extern void __folio_mark_dirty(struct folio *folio, struct address_space *mapping, int warn);
+extern void folio_memcg_unlock(struct folio *folio);
+extern bool node_set_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark);
+extern void folio_account_dirtied(struct folio *folio, struct address_space *mapping);
+extern void xa_mark_set(struct xarray *xa, xa_mark_t mark);
 
 /*
  * Per-cpu buffer LRU implementation.  To reduce the cost of __find_get_block().
@@ -98,6 +104,7 @@ my_lookup_bh_lru(struct block_device *bdev, sector_t block, unsigned size)
 
         if (bh && bh->b_blocknr == block && bh->b_bdev == bdev &&
             bh->b_size == size) {
+            printk("[%s]: The %d-th element is in the cache — a cache hit occurs", __func__, i); // test code
             if (i) {
                 while (i) {
                     __this_cpu_write(bh_lrus.bhs[i],
@@ -424,3 +431,410 @@ __my_getblk_gfp(struct block_device *bdev, sector_t block,
     return bh;
 }
 EXPORT_SYMBOL(__my_getblk_gfp);
+
+static inline struct xa_node *my_xa_to_node(const void *entry)
+{
+    return (struct xa_node *)((unsigned long)entry - 2);
+}
+
+static unsigned int my_get_offset(unsigned long index, struct xa_node *node)
+{
+    return (index >> node->shift) & XA_CHUNK_MASK;
+}
+
+static void *my_xas_descend(struct xa_state *xas, struct xa_node *node)
+{
+    unsigned int offset = my_get_offset(xas->xa_index, node);
+    void *entry = xa_entry(xas->xa, node, offset);
+
+    // printk("[%s]: 0\n", __func__); // test code
+    printk("[%s]: offset= %u\n", __func__, offset); // test code
+
+    xas->xa_node = node;
+    while (xa_is_sibling(entry)) {
+        printk("[%s]: 1\n", __func__); // test code
+        offset = xa_to_sibling(entry);
+        entry = xa_entry(xas->xa, node, offset);
+        if (node->shift && xa_is_node(entry)) {
+            printk("[%s]: 2\n", __func__); // test code
+            entry = XA_RETRY_ENTRY;
+        }
+    }
+    // printk("[%s]: 3\n", __func__); // test code
+
+    xas->xa_offset = offset;
+    return entry;
+}
+
+/**
+ * xas_invalid() - Is the xas in a retry or error state?
+ * @xas: XArray operation state.
+ *
+ * Return: %true if the xas cannot be used for operations.
+ */
+static inline bool my_xas_invalid(const struct xa_state *xas)
+{
+    return (unsigned long)xas->xa_node & 3;
+}
+
+/**
+ * xas_valid() - Is the xas a valid cursor into the array?
+ * @xas: XArray operation state.
+ *
+ * Return: %true if the xas can be used for operations.
+ */
+static inline bool my_xas_valid(const struct xa_state *xas)
+{
+    return !my_xas_invalid(xas);
+}
+
+/**
+ * xa_is_err() - Report whether an XArray operation returned an error
+ * @entry: Result from calling an XArray function
+ *
+ * If an XArray operation cannot complete an operation, it will return
+ * a special value indicating an error.  This function tells you
+ * whether an error occurred; xa_err() tells you which error occurred.
+ *
+ * Context: Any context.
+ * Return: %true if the entry indicates an error.
+ */
+static inline bool my_xa_is_err(const void *entry)
+{
+    return unlikely(xa_is_internal(entry) &&
+            entry >= xa_mk_internal(-MAX_ERRNO));
+}
+
+/**
+ * xa_err() - Turn an XArray result into an errno.
+ * @entry: Result from calling an XArray function.
+ *
+ * If an XArray operation cannot complete an operation, it will return
+ * a special pointer value which encodes an errno.  This function extracts
+ * the errno from the pointer value, or returns 0 if the pointer does not
+ * represent an errno.
+ *
+ * Context: Any context.
+ * Return: A negative errno or 0.
+ */
+static inline int my_xa_err(void *entry)
+{
+    /* xa_to_internal() would not do sign extension. */
+    if (my_xa_is_err(entry))
+        return (long)entry >> 2;
+    return 0;
+}
+
+/**
+ * xas_error() - Return an errno stored in the xa_state.
+ * @xas: XArray operation state.
+ *
+ * Return: 0 if no error has been noted.  A negative errno if one has.
+ */
+static inline int my_xas_error(const struct xa_state *xas)
+{
+    return my_xa_err(xas->xa_node);
+}
+
+/* Private */
+static inline void *my_xa_head(const struct xarray *xa)
+{
+    return rcu_dereference_check(xa->xa_head,
+                        lockdep_is_held(&xa->xa_lock));
+}
+
+/* Private */
+static inline bool my_xa_is_node(const void *entry)
+{
+    return xa_is_internal(entry) && (unsigned long)entry > 4096;
+}
+
+static void *my_set_bounds(struct xa_state *xas)
+{
+    xas->xa_node = XAS_BOUNDS;
+    return NULL;
+}
+
+/*
+ * Starts a walk.  If the @xas is already valid, we assume that it's on
+ * the right path and just return where we've got to.  If we're in an
+ * error state, return NULL.  If the index is outside the current scope
+ * of the xarray, return NULL without changing @xas->xa_node.  Otherwise
+ * set @xas->xa_node to NULL and return the current head of the array.
+ */
+static void *my_xas_start(struct xa_state *xas)
+{
+    void *entry;
+
+    printk("[%s]: 0\n", __func__); // test code
+
+    if (my_xas_valid(xas)) {
+        printk("[%s]: 1\n", __func__); // test code
+        return xas_reload(xas);
+    }
+    if (my_xas_error(xas)) {
+        printk("[%s]: 2\n", __func__); // test code
+        return NULL;
+    }
+
+    printk("[%s]: 3\n", __func__); // test code
+    
+    entry = my_xa_head(xas->xa);
+    if (!my_xa_is_node(entry)) {
+        printk("[%s]: 4\n", __func__); // test code
+        if (xas->xa_index) {
+            printk("[%s]: 5\n", __func__); // test code
+            return my_set_bounds(xas);
+        }
+    } else {
+        printk("[%s]: 6\n", __func__); // test code
+        if ((xas->xa_index >> my_xa_to_node(entry)->shift) > XA_CHUNK_MASK) {
+            printk("[%s]: 7\n", __func__); // test code
+            return my_set_bounds(xas);
+        }
+    }
+    printk("[%s]: 8\n", __func__); // test code
+
+    xas->xa_node = NULL;
+    return entry;
+}
+
+/**
+ * xas_load() - Load an entry from the XArray (advanced).
+ * @xas: XArray operation state.
+ *
+ * Usually walks the @xas to the appropriate state to load the entry
+ * stored at xa_index.  However, it will do nothing and return %NULL if
+ * @xas is in an error state.  xas_load() will never expand the tree.
+ *
+ * If the xa_state is set up to operate on a multi-index entry, xas_load()
+ * may return %NULL or an internal entry, even if there are entries
+ * present within the range specified by @xas.
+ *
+ * Context: Any context.  The caller should hold the xa_lock or the RCU lock.
+ * Return: Usually an entry in the XArray, but see description for exceptions.
+ */
+void *my_xas_load(struct xa_state *xas)
+{
+    void *entry = my_xas_start(xas); // add EXPORT_SYMBOL
+
+    printk("[%s]: 0\n", __func__); // test code
+
+    while (xa_is_node(entry)) {
+        struct xa_node *node = my_xa_to_node(entry); // add EXPORT_SYMBOL 
+                                                     
+        printk("[%s]: 1\n", __func__); // test code
+
+        printk("[%s]: xas->xa_shift: %u\n", __func__, xas->xa_shift); // test code
+        printk("[%s]: node->shift: %u\n", __func__, node->shift); // test code
+                                                                  
+        if(node->offset) {                                                                 
+            printk("[%s]: node->offset: %u\n", __func__, node->offset); // test code
+        } else {
+            printk("[%s]: node->offset is NULL", __func__); // test code
+        }
+
+        if (xas->xa_shift > node->shift) {
+            printk("[%s]: 2\n", __func__); // test code
+            break;
+        }
+
+        printk("[%s]: 3\n", __func__); // test code
+        
+        entry = my_xas_descend(xas, node);
+        if (node->shift == 0) {
+            printk("[%s]: 4\n", __func__); // test code
+            // printk("[%s]: The address entry is pointing to: %p\n", __func__, entry); // test code
+            break;
+        }
+        printk("[%s]: 5\n", __func__); // test code
+    }
+    printk("[%s]: 6\n", __func__); // test code
+    return entry;
+}
+
+/**
+ * xas_set_mark() - Sets the mark on this entry and its parents.
+ * @xas: XArray operation state.
+ * @mark: Mark number.
+ *
+ * Sets the specified mark on this entry, and walks up the tree setting it
+ * on all the ancestor entries.  Does nothing if @xas has not been walked to
+ * an entry, or is in an error state.
+ */
+void my_xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
+{
+    struct xa_node *node = xas->xa_node;
+    unsigned int offset = xas->xa_offset;
+
+    // printk("[%s]: 0\n", __func__); // test code
+    printk("[%s]: xas->xa_offset = %u\n", __func__, xas->xa_offset); // test code
+
+    if (xas_invalid(xas)) {
+        // printk("[%s]: 1\n", __func__); // test code
+        return;
+    }
+    // printk("[%s]: 2\n", __func__); // test code
+
+    while (node) {
+        // printk("[%s]: 3\n", __func__); // test code
+        if (node_set_mark(node, offset, mark)) {
+            // printk("[%s]: 4\n", __func__); // test code
+            return;
+        }
+        // printk("[%s]: 5\n", __func__); // test code
+        offset = node->offset;
+        node = xa_parent_locked(xas->xa, node);
+    }
+    // printk("[%s]: 6\n", __func__); // test code
+
+    if (!xa_marked(xas->xa, mark)) {
+        // printk("[%s]: 7\n", __func__); // test code
+        xa_mark_set(xas->xa, mark);
+    }
+}
+
+/**
+ * __xa_set_mark() - Set this mark on this entry while locked.
+ * @xa: XArray.
+ * @index: Index of entry.
+ * @mark: Mark number.
+ *
+ * Attempting to set a mark on a %NULL entry does not succeed.
+ *
+ * Context: Any context.  Expects xa_lock to be held on entry.
+ */
+void __my_xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
+{
+    XA_STATE(xas, xa, index);
+
+    printk("[%s]: xas.xa_index= %lu\n", __func__, xas.xa_index); // test code
+
+    void *entry = my_xas_load(&xas);
+    
+    if (entry)
+        my_xas_set_mark(&xas, mark);
+}
+
+/*
+ * Mark the folio dirty, and set it dirty in the page cache, and mark
+ * the inode dirty.
+ *
+ * If warn is true, then emit a warning if the folio is not uptodate and has
+ * not been truncated.
+ *
+ * The caller must hold folio_memcg_lock().  Most callers have the folio
+ * locked.  A few have the folio blocked from truncation through other
+ * means (eg zap_vma_pages() has it mapped and is holding the page table
+ * lock).  This can also be called from mark_buffer_dirty(), which I
+ * cannot prove is always protected against truncate.
+ */
+void __my_folio_mark_dirty(struct folio *folio, struct address_space *mapping,
+                 int warn)
+{
+    unsigned long flags;
+
+    xa_lock_irqsave(&mapping->i_pages, flags);
+    if (folio->mapping) {   /* Race with truncate? */
+        WARN_ON_ONCE(warn && !folio_test_uptodate(folio));
+        folio_account_dirtied(folio, mapping);
+        __my_xa_set_mark(&mapping->i_pages, folio_index(folio),
+                PAGECACHE_TAG_DIRTY);
+    }
+    xa_unlock_irqrestore(&mapping->i_pages, flags);
+}
+
+/**
+ * mark_buffer_dirty - mark a buffer_head as needing writeout
+ * @bh: the buffer_head to mark dirty
+ *
+ * mark_buffer_dirty() will set the dirty bit against the buffer, then set
+ * its backing page dirty, then tag the page as dirty in the page cache
+ * and then attach the address_space's inode to its superblock's dirty
+ * inode list.
+ *
+ * mark_buffer_dirty() is atomic.  It takes bh->b_folio->mapping->private_lock,
+ * i_pages lock and mapping->host->i_lock.
+ */
+void my_mark_buffer_dirty(struct buffer_head *bh)
+{
+    WARN_ON_ONCE(!buffer_uptodate(bh));
+    
+    printk("[%s]: The address bh->b_folio is pointing to: %p\n", __func__, bh->b_folio); // test code
+
+    printk("[%s]: 0\n", __func__);
+
+    // comment out this function
+    // trace_block_dirty_buffer(bh);
+
+    /*
+     * Very *carefully* optimize the it-is-already-dirty case.
+     *
+     * Don't let the final "is it dirty" escape to before we
+     * perhaps modified the buffer.
+     */
+    if (buffer_dirty(bh)) {
+        printk("[%s]: 1\n", __func__);
+        smp_mb();
+        if (buffer_dirty(bh)) {
+            printk("[%s]: 2\n", __func__);
+            return;
+        }
+    }
+
+    if (!test_set_buffer_dirty(bh)) {
+        printk("[%s]: 3\n", __func__);
+        struct folio *folio = bh->b_folio;
+        struct address_space *mapping = NULL;
+       
+		// === test code begin ===
+        if (folio) {
+            // index is pgoff_t (usually unsigned long), so use %lu
+            pgoff_t idx = folio_index(folio);
+            printk("[%s]: folio's index=%lu\n", __func__, (unsigned long)idx);
+            /*
+            // For a large folio, this will be > 1
+            unsigned long nr = folio_nr_pages(folio);
+
+            // File offset in bytes = index << PAGE_SHIFT
+            unsigned long long file_off = (unsigned long long)idx << PAGE_SHIFT;
+
+            // The "file offset" is only meaningful if a mapping exists
+            mapping = folio->mapping;
+
+            printk("[%s]: folio=%p index=%lu (%llu bytes) nr_pages=%lu mapping=%p\n",
+                   __func__, folio,
+                   (unsigned long)idx,
+                   file_off,
+                   (unsigned long)nr,
+                   mapping);
+
+            if (mapping && mapping->host) {
+                // Also print info like the inode number for reference
+                printk("[%s]: inode ino=%lu sb=%p\n",
+                       __func__, (unsigned long)mapping->host->i_ino,
+                       mapping->host->i_sb);
+            }
+            */
+        } else {
+            printk("[%s]: folio is NULL (bh=%p)\n", __func__, bh);
+        }
+		// === tese code end ===
+
+        folio_memcg_lock(folio);
+        if (!folio_test_set_dirty(folio)) {
+            printk("[%s]: 4\n", __func__);
+            mapping = folio->mapping;
+            if (mapping) {
+                printk("[%s]: 5\n", __func__);
+                __my_folio_mark_dirty(folio, mapping, 0);
+            }
+        }
+        printk("[%s]: 6\n", __func__);
+        folio_memcg_unlock(folio);
+        if (mapping) {
+            printk("[%s]: 7\n", __func__);
+            __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+        }
+    }
+}

@@ -786,24 +786,45 @@ static int find_inode_bit(struct super_block *sb, pxt4_group_t group,
 	bool check_recently_deleted = PXT4_SB(sb)->s_journal == NULL;
 	unsigned long recently_deleted_ino = PXT4_INODES_PER_GROUP(sb);
 
+    printk("[%s]: group= %u\n", __func__, group); // test code
+    printk("[%s]: ino(before)= %lu\n", __func__, *ino); // test code
+    printk("[%s]: bitmap->b_blocknr= %llu\n", __func__, bitmap->b_blocknr); // test code
+
+    // printk("[%s]: 0\n", __func__); // test code
+
 next:
+    // printk("[%s]: 1\n", __func__); // test code
+    printk("[%s]: PXT4_INODES_PER_GROUP(sb)= %lu\n", __func__, recently_deleted_ino); // test code
+
 	*ino = pxt4_find_next_zero_bit((unsigned long *)
 				       bitmap->b_data,
 				       PXT4_INODES_PER_GROUP(sb), *ino);
-	if (*ino >= PXT4_INODES_PER_GROUP(sb))
+    printk("[%s]: ino(after)= %lu\n", __func__, *ino); // test code
+	if (*ino >= PXT4_INODES_PER_GROUP(sb)) {
+        // printk("[%s]: 2\n", __func__); // test code
 		goto not_found;
+    }
 
 	if (check_recently_deleted && recently_deleted(sb, group, *ino)) {
+        // printk("[%s]: 3\n", __func__); // test code
 		recently_deleted_ino = *ino;
 		*ino = *ino + 1;
-		if (*ino < PXT4_INODES_PER_GROUP(sb))
+		if (*ino < PXT4_INODES_PER_GROUP(sb)) {
+            // printk("[%s]: 4\n", __func__); // test code
 			goto next;
+        }
+        // printk("[%s]: 5\n", __func__); // test code
 		goto not_found;
 	}
+    // printk("[%s]: 6\n", __func__); // test code
 	return 1;
 not_found:
-	if (recently_deleted_ino >= PXT4_INODES_PER_GROUP(sb))
+    // printk("[%s]: 7\n", __func__); // test code
+	if (recently_deleted_ino >= PXT4_INODES_PER_GROUP(sb)) {
+        // printk("[%s]: 8\n", __func__); // test code
 		return 0;
+    }
+    // printk("[%s]: 9\n", __func__); // test code
 	/*
 	 * Not reusing recently deleted inodes is mostly a preference. We don't
 	 * want to report ENOSPC or skew allocation patterns because of that.
@@ -1090,22 +1111,45 @@ struct inode *__pxt4_new_inode(struct mnt_idmap *idmap,
 	*/
 
     // printk("[%s]: qstr->name= %s\n", __func__, qstr->name); // test code
+    
+    // === test code begin ===
+    if(!handle) {
+        printk("[%s]: handle is NULL", __func__);
+    } else {
+        printk("[%s]: handle is not NULL", __func__);
+    }
+    // === test code end ===
+
+    printk("[%s]: 0\n", __func__); // test code
 
 	/* Cannot create files in a deleted directory */
-	if (!dir || !dir->i_nlink)
+	if (!dir || !dir->i_nlink) {
+        printk("[%s]: 1\n", __func__); // test code
 		return ERR_PTR(-EPERM);
+    }
 
-	sb = dir->i_sb;
+    printk("[%s]: 2\n", __func__); // test code
+	
+    sb = dir->i_sb;
 	sbi = PXT4_SB(sb);
 
-	if (unlikely(pxt4_forced_shutdown(sb)))
+	if (unlikely(pxt4_forced_shutdown(sb))) {
+        printk("[%s]: 3\n", __func__); // test code
 		return ERR_PTR(-EIO);
+    }
+
+    printk("[%s]: 4\n", __func__); // test code
 
 	ngroups = pxt4_get_groups_count(sb);
 	trace_pxt4_request_inode(dir, mode);
-	inode = new_inode(sb);
-	if (!inode)
+	
+    printk("[%s]: 'new_inode()'", __func__); // test code
+    inode = new_inode(sb);
+	
+    if (!inode) {
+        printk("[%s]: 5\n", __func__); // test code
 		return ERR_PTR(-ENOMEM);
+    }
 
 	printk("[%s]: inode->i_ino= %lu\n", __func__, inode->i_ino); // test code
 
@@ -1117,185 +1161,311 @@ struct inode *__pxt4_new_inode(struct mnt_idmap *idmap,
 	 * transaction
 	 */
 	if (owner) {
+        printk("[%s]: 6\n", __func__); // test code
 		inode->i_mode = mode;
 		i_uid_write(inode, owner[0]);
 		i_gid_write(inode, owner[1]);
 	} else if (test_opt(sb, GRPID)) {
+        printk("[%s]: 7\n", __func__); // test code
 		inode->i_mode = mode;
 		inode_fsuid_set(inode, idmap);
 		inode->i_gid = dir->i_gid;
-	} else
+	} else {
+        printk("[%s]: 8\n", __func__); // test code
 		inode_init_owner(idmap, inode, dir, mode);
+    }
+        
+    printk("[%s]: 9\n", __func__); // test code
 
 	if (pxt4_has_feature_project(sb) &&
-	    pxt4_test_inode_flag(dir, PXT4_INODE_PROJINHERIT))
+	    pxt4_test_inode_flag(dir, PXT4_INODE_PROJINHERIT)) {
+        printk("[%s]: 10\n", __func__); // test code
 		ei->i_projid = PXT4_I(dir)->i_projid;
-	else
+    }
+	else {
+        printk("[%s]: 11\n", __func__); // test code
 		ei->i_projid = make_kprojid(&init_user_ns, PXT4_DEF_PROJID);
+    }
+
+    printk("[%s]: 12\n", __func__); // test code
 
 	if (!(i_flags & PXT4_EA_INODE_FL)) {
+        printk("[%s]: 13\n", __func__); // test code
 		err = fscrypt_prepare_new_inode(dir, inode, &encrypt);
-		if (err)
+		if (err) {
+            printk("[%s]: 14\n", __func__); // test code
 			goto out;
+        }
 	}
 
-	err = dquot_initialize(inode);
-	if (err)
+    printk("[%s]: 15\n", __func__); // test code
+	
+    err = dquot_initialize(inode);
+	if (err) {
+        printk("[%s]: 16\n", __func__); // test code
 		goto out;
+    }
+    
+    printk("[%s]: 17\n", __func__); // test code
 
 	if (!handle && sbi->s_journal && !(i_flags & PXT4_EA_INODE_FL)) {
+        printk("[%s]: 18\n", __func__); // test code
 		ret2 = pxt4_xattr_credits_for_new_inode(dir, mode, encrypt);
 		if (ret2 < 0) {
+            printk("[%s]: 19\n", __func__); // test code
 			err = ret2;
 			goto out;
 		}
 		nblocks += ret2;
 	}
 
-	if (!goal)
-		goal = sbi->s_inode_goal;
+    printk("[%s]: 20\n", __func__); // test code
 
-	if (goal && goal <= le32_to_cpu(sbi->s_es->s_inodes_count)) {
+	if (!goal) {
+        printk("[%s]: 21\n", __func__); // test code
+		goal = sbi->s_inode_goal;
+    }
+
+    printk("[%s]: 22\n", __func__); // test code
+	
+    if (goal && goal <= le32_to_cpu(sbi->s_es->s_inodes_count)) {
+        printk("[%s]: 23\n", __func__); // test code
 		group = (goal - 1) / PXT4_INODES_PER_GROUP(sb);
 		ino = (goal - 1) % PXT4_INODES_PER_GROUP(sb);
 		ret2 = 0;
 		goto got_group;
 	}
+    
+    printk("[%s]: 24\n", __func__); // test code
 
-	if (S_ISDIR(mode))
+	if (S_ISDIR(mode)) {
+        printk("[%s]: 25\n", __func__); // test code
 		ret2 = find_group_orlov(sb, dir, &group, mode, qstr);
-	else
+    }
+	else {
+        printk("[%s]: 26\n", __func__); // test code
+        printk("[%s]: 'find_group_other()'", __func__); // test code
 		ret2 = find_group_other(sb, dir, &group, mode);
+    }
  
+    printk("[%s]: 27\n", __func__); // test code
+                                
     printk("[%s]: ret2(find_group_other()'s result)= %d\n", __func__, ret2); // test code
     printk("[%s]: group= %u\n", __func__, group); // test code
 
 got_group:
-	PXT4_I(dir)->i_last_alloc_group = group;
+    printk("[%s]: 28\n", __func__); // test code
+	
+    PXT4_I(dir)->i_last_alloc_group = group;
 	err = -ENOSPC;
-	if (ret2 == -1)
+	if (ret2 == -1) {
+        printk("[%s]: 29\n", __func__); // test code
 		goto out;
+    }
 
-	/*
+    printk("[%s]: 30\n", __func__); // test code
+	
+    /*
 	 * Normally we will only go through one pass of this loop,
 	 * unless we get unlucky and it turns out the group we selected
 	 * had its last inode grabbed by someone else.
 	 */
 	for (i = 0; i < ngroups; i++, ino = 0) {
-		err = -EIO;
+        printk("[%s]: The loop starts", __func__); // test code
+        printk("[%s]: 31\n", __func__); // test code
+		
+        err = -EIO;
 
 		gdp = pxt4_get_group_desc(sb, group, &group_desc_bh);
-		if (!gdp)
+		if (!gdp) {
+            printk("[%s]: 32\n", __func__); // test code
 			goto out;
+        }
+
+        printk("[%s]: 33\n", __func__); // test code
 
 		/*
 		 * Check free inodes count before loading bitmap.
 		 */
-		if (pxt4_free_inodes_count(sb, gdp) == 0)
+		if (pxt4_free_inodes_count(sb, gdp) == 0) {
+            printk("[%s]: 34\n", __func__); // test code
 			goto next_group;
+        }
 
 		if (!(sbi->s_mount_state & PXT4_FC_REPLAY)) {
+            printk("[%s]: 35\n", __func__); // test code
 			grp = pxt4_get_group_info(sb, group);
 			/*
 			 * Skip groups with already-known suspicious inode
 			 * tables
 			 */
-			if (!grp || PXT4_MB_GRP_IBITMAP_CORRUPT(grp))
+			if (!grp || PXT4_MB_GRP_IBITMAP_CORRUPT(grp)) {
+                printk("[%s]: 36\n", __func__); // test code
 				goto next_group;
+            }
 		}
+            
+        printk("[%s]: 37\n", __func__); // test code
 
 		brelse(inode_bitmap_bh);
+
+        printk("[%s]: 'pxt4_read_inode_bitmap()'", __func__); // test code
 		inode_bitmap_bh = pxt4_read_inode_bitmap(sb, group);
 		/* Skip groups with suspicious inode tables */
 		if (((!(sbi->s_mount_state & PXT4_FC_REPLAY))
 		     && PXT4_MB_GRP_IBITMAP_CORRUPT(grp)) ||
 		    IS_ERR(inode_bitmap_bh)) {
-			inode_bitmap_bh = NULL;
+            
+            printk("[%s]: 38\n", __func__); // test code
+			
+            inode_bitmap_bh = NULL;
 			goto next_group;
 		}
 
-repeat_in_this_group:
-		ret2 = find_inode_bit(sb, group, inode_bitmap_bh, &ino);
+repeat_in_this_group:    
+        printk("[%s]: 39\n", __func__); // test code
+		
+        printk("[%s]: 'find_inode_bit()'", __func__); // test code
+        ret2 = find_inode_bit(sb, group, inode_bitmap_bh, &ino);
 
         printk("[%s]: ret2(find_inode_bit()'s result)= %d\n", __func__, ret2); // test code
         printk("[%s]: ino(after find_inode_bit())= %lu\n", __func__, ino); // test code
 
-		if (!ret2)
+		if (!ret2) {
+            printk("[%s]: 40\n", __func__); // test code
 			goto next_group;
+        }
+            
+        printk("[%s]: 41\n", __func__); // test code
 
 		if (group == 0 && (ino + 1) < PXT4_FIRST_INO(sb)) {
-			pxt4_error(sb, "reserved inode found cleared - "
+            printk("[%s]: 42\n", __func__); // test code
+			
+            pxt4_error(sb, "reserved inode found cleared - "
 				   "inode=%lu", ino + 1);
 			pxt4_mark_group_bitmap_corrupted(sb, group,
 					PXT4_GROUP_INFO_IBITMAP_CORRUPT);
 			goto next_group;
 		}
+        
+        printk("[%s]: 43\n", __func__); // test code
 
 		if ((!(sbi->s_mount_state & PXT4_FC_REPLAY)) && !handle) {
-			BUG_ON(nblocks <= 0);
+            printk("[%s]: 44\n", __func__); // test code
+
+            // === test code begin ===
+            if(!handle) {
+                printk("[%s]: (before __pxt4_journal_start_sb()) handle is NULL", __func__);
+            } else {
+                printk("[%s]: (before __pxt4_journal_start_sb()) handle is not NULL", __func__);
+            }
+            // === test code end ===
+			
+            BUG_ON(nblocks <= 0);
 			handle = __pxt4_journal_start_sb(NULL, dir->i_sb,
 				 line_no, handle_type, nblocks, 0,
 				 pxt4_trans_default_revoke_credits(sb));
+
+            // === test code begin ===
+            if(!handle) {
+                printk("[%s]: (after __pxt4_journal_start_sb()) handle is NULL", __func__);
+            } else {
+                printk("[%s]: (after __pxt4_journal_start_sb()) handle is not NULL", __func__);
+            }
+            // === test code end ===
+			
 			if (IS_ERR(handle)) {
-				err = PTR_ERR(handle);
+                printk("[%s]: 45\n", __func__); // test code
+				
+                err = PTR_ERR(handle);
 				pxt4_std_error(sb, err);
 				goto out;
 			}
 		}
-		BUFFER_TRACE(inode_bitmap_bh, "get_write_access");
+
+        printk("[%s]: 46\n", __func__); // test code
+		
+        BUFFER_TRACE(inode_bitmap_bh, "get_write_access");
 		err = pxt4_journal_get_write_access(handle, sb, inode_bitmap_bh,
 						    PXT4_JTR_NONE);
 		if (err) {
+            printk("[%s]: 47\n", __func__); // test code
 			pxt4_std_error(sb, err);
 			goto out;
 		}
+        printk("[%s]: 48\n", __func__); // test code
 		pxt4_lock_group(sb, group);
+
+        printk("[%s]: 'pxt4_test_and_set_bit()'", __func__); // test code
 		ret2 = pxt4_test_and_set_bit(ino, inode_bitmap_bh->b_data);
         
         printk("[%s]: ret2(pxt4_test_and_set_bit()'s result)= %d\n", __func__, ret2); // test code
         printk("[%s]: ino(after pxt4_test_and_set_bit())= %lu\n", __func__, ino); // test code
 		
         if (ret2) {
+            printk("[%s]: 49\n", __func__); // test code
 			/* Someone already took the bit. Repeat the search
 			 * with lock held.
 			 */
 			ret2 = find_inode_bit(sb, group, inode_bitmap_bh, &ino);
 			if (ret2) {
+                printk("[%s]: 50\n", __func__); // test code
 				pxt4_set_bit(ino, inode_bitmap_bh->b_data);
 				ret2 = 0;
 			} else {
+                printk("[%s]: 51\n", __func__); // test code
 				ret2 = 1; /* we didn't grab the inode */
 			}
 		}
+        printk("[%s]: 52\n", __func__); // test code
+                                        //
 		pxt4_unlock_group(sb, group);
 		ino++;		/* the inode bitmap is zero-based */
         
         printk("[%s]: ino(after ino++)= %lu\n", __func__, ino); // test code
 		
-        if (!ret2)
+        if (!ret2){
+            printk("[%s]: 53\n", __func__); // test code
 			goto got; /* we grabbed the inode! */
+        }
 
-		if (ino < PXT4_INODES_PER_GROUP(sb))
+        printk("[%s]: 54\n", __func__); // test code
+		
+        if (ino < PXT4_INODES_PER_GROUP(sb)) {
+            printk("[%s]: 55\n", __func__); // test code
 			goto repeat_in_this_group;
+        }
 next_group:
-		if (++group == ngroups)
+		if (++group == ngroups){
+            printk("[%s]: 56\n", __func__); // test code
 			group = 0;
+        }
 	}
-	err = -ENOSPC;
+    printk("[%s]: 57\n", __func__); // test code
+	
+    err = -ENOSPC;
 	goto out;
 
 got:
-	BUFFER_TRACE(inode_bitmap_bh, "call pxt4_handle_dirty_metadata");
-	err = pxt4_handle_dirty_metadata(handle, NULL, inode_bitmap_bh);
+    printk("[%s]: 58\n", __func__); // test code
+	
+    BUFFER_TRACE(inode_bitmap_bh, "call pxt4_handle_dirty_metadata");
+	
+    printk("[%s]: 'pxt4_handle_dirty_metadata(handle, NULL, inode_bitmap_bh)'", __func__); // test code
+    err = pxt4_handle_dirty_metadata(handle, NULL, inode_bitmap_bh);
 	if (err) {
+        printk("[%s]: 59\n", __func__); // test code
+
 		pxt4_std_error(sb, err);
 		goto out;
 	}
+    printk("[%s]: 60\n", __func__); // test code
 
 	BUFFER_TRACE(group_desc_bh, "get_write_access");
 	err = pxt4_journal_get_write_access(handle, sb, group_desc_bh,
 					    PXT4_JTR_NONE);
 	if (err) {
+        printk("[%s]: 61\n", __func__); // test code
 		pxt4_std_error(sb, err);
 		goto out;
 	}
@@ -1303,21 +1473,26 @@ got:
 	/* We may have to initialize the block bitmap if it isn't already */
 	if (pxt4_has_group_desc_csum(sb) &&
 	    gdp->bg_flags & cpu_to_le16(PXT4_BG_BLOCK_UNINIT)) {
+        printk("[%s]: 62\n", __func__); // test code
 		struct buffer_head *block_bitmap_bh;
 
 		block_bitmap_bh = pxt4_read_block_bitmap(sb, group);
 		if (IS_ERR(block_bitmap_bh)) {
+            printk("[%s]: 63\n", __func__); // test code
 			err = PTR_ERR(block_bitmap_bh);
 			goto out;
 		}
+        printk("[%s]: 64\n", __func__); // test code
 		BUFFER_TRACE(block_bitmap_bh, "get block bitmap access");
 		err = pxt4_journal_get_write_access(handle, sb, block_bitmap_bh,
 						    PXT4_JTR_NONE);
 		if (err) {
+            printk("[%s]: 65\n", __func__); // test code
 			brelse(block_bitmap_bh);
 			pxt4_std_error(sb, err);
 			goto out;
 		}
+        printk("[%s]: 66\n", __func__); // test code
 
 		BUFFER_TRACE(block_bitmap_bh, "dirty block bitmap");
 		err = pxt4_handle_dirty_metadata(handle, NULL, block_bitmap_bh);
@@ -1326,42 +1501,60 @@ got:
 		pxt4_lock_group(sb, group);
 		if (pxt4_has_group_desc_csum(sb) &&
 		    (gdp->bg_flags & cpu_to_le16(PXT4_BG_BLOCK_UNINIT))) {
-			gdp->bg_flags &= cpu_to_le16(~PXT4_BG_BLOCK_UNINIT);
+            
+            printk("[%s]: 67\n", __func__); // test code
+			
+            gdp->bg_flags &= cpu_to_le16(~PXT4_BG_BLOCK_UNINIT);
 			pxt4_free_group_clusters_set(sb, gdp,
 				pxt4_free_clusters_after_init(sb, group, gdp));
 			pxt4_block_bitmap_csum_set(sb, gdp, block_bitmap_bh);
 			pxt4_group_desc_csum_set(sb, group, gdp);
 		}
-		pxt4_unlock_group(sb, group);
+        printk("[%s]: 68\n", __func__); // test code
+		
+        pxt4_unlock_group(sb, group);
 		brelse(block_bitmap_bh);
 
 		if (err) {
-			pxt4_std_error(sb, err);
+            printk("[%s]: 69\n", __func__); // test code
+			
+            pxt4_std_error(sb, err);
 			goto out;
 		}
 	}
+    
+    printk("[%s]: 70\n", __func__); // test code
 
 	/* Update the relevant bg descriptor fields */
 	if (pxt4_has_group_desc_csum(sb)) {
 		int free;
 		struct pxt4_group_info *grp = NULL;
 
-		if (!(sbi->s_mount_state & PXT4_FC_REPLAY)) {
+        printk("[%s]: 71\n", __func__); // test code
+		
+        if (!(sbi->s_mount_state & PXT4_FC_REPLAY)) {
+            printk("[%s]: 72\n", __func__); // test code
 			grp = pxt4_get_group_info(sb, group);
 			if (!grp) {
+                printk("[%s]: 73\n", __func__); // test code
 				err = -EFSCORRUPTED;
 				goto out;
 			}
+            printk("[%s]: 74\n", __func__); // test code
 			down_read(&grp->alloc_sem); /*
 						     * protect vs itable
 						     * lazyinit
 						     */
 		}
-		pxt4_lock_group(sb, group); /* while we modify the bg desc */
+        printk("[%s]: 75\n", __func__); // test code
+		
+        pxt4_lock_group(sb, group); /* while we modify the bg desc */
 		free = PXT4_INODES_PER_GROUP(sb) -
 			pxt4_itable_unused_count(sb, gdp);
 		if (gdp->bg_flags & cpu_to_le16(PXT4_BG_INODE_UNINIT)) {
-			gdp->bg_flags &= cpu_to_le16(~PXT4_BG_INODE_UNINIT);
+			printk("[%s]: 76\n", __func__); // test code
+            
+            gdp->bg_flags &= cpu_to_le16(~PXT4_BG_INODE_UNINIT);
 			free = 0;
 		}
 		/*
@@ -1369,48 +1562,78 @@ got:
 		 * relative inode number in this group. if it is greater
 		 * we need to update the bg_itable_unused count
 		 */
-		if (ino > free)
-			pxt4_itable_unused_set(sb, gdp,
+		if (ino > free) {
+            printk("[%s]: 77\n", __func__); // test code
+			
+            pxt4_itable_unused_set(sb, gdp,
 					(PXT4_INODES_PER_GROUP(sb) - ino));
-		if (!(sbi->s_mount_state & PXT4_FC_REPLAY))
+        }
+		if (!(sbi->s_mount_state & PXT4_FC_REPLAY)) {
+            printk("[%s]: 78\n", __func__); // test code
 			up_read(&grp->alloc_sem);
+        }
 	} else {
+        printk("[%s]: 79\n", __func__); // test code
 		pxt4_lock_group(sb, group);
 	}
+    printk("[%s]: 80\n", __func__); // test code
 
+    printk("[%s]: 'pxt4_free_inodes_set()'", __func__); // test code
 	pxt4_free_inodes_set(sb, gdp, pxt4_free_inodes_count(sb, gdp) - 1);
-	if (S_ISDIR(mode)) {
-		pxt4_used_dirs_set(sb, gdp, pxt4_used_dirs_count(sb, gdp) + 1);
+	
+    if (S_ISDIR(mode)) {
+        printk("[%s]: 81\n", __func__); // test code
+		
+        pxt4_used_dirs_set(sb, gdp, pxt4_used_dirs_count(sb, gdp) + 1);
 		if (sbi->s_log_groups_per_flex) {
-			pxt4_group_t f = pxt4_flex_group(sbi, group);
+            printk("[%s]: 82\n", __func__); // test code
+			
+            pxt4_group_t f = pxt4_flex_group(sbi, group);
 
 			atomic_inc(&sbi_array_rcu_deref(sbi, s_flex_groups,
 							f)->used_dirs);
 		}
 	}
-	if (pxt4_has_group_desc_csum(sb)) {
-		pxt4_inode_bitmap_csum_set(sb, gdp, inode_bitmap_bh,
+
+    printk("[%s]: 83\n", __func__); // test code
+	
+    if (pxt4_has_group_desc_csum(sb)) {
+        printk("[%s]: 84\n", __func__); // test code
+		
+        pxt4_inode_bitmap_csum_set(sb, gdp, inode_bitmap_bh,
 					   PXT4_INODES_PER_GROUP(sb) / 8);
 		pxt4_group_desc_csum_set(sb, group, gdp);
 	}
-	pxt4_unlock_group(sb, group);
+    printk("[%s]: 85\n", __func__); // test code
+	
+    pxt4_unlock_group(sb, group);
 
 	BUFFER_TRACE(group_desc_bh, "call pxt4_handle_dirty_metadata");
-	err = pxt4_handle_dirty_metadata(handle, NULL, group_desc_bh);
-	if (err) {
+
+    printk("[%s]: 'pxt4_handle_dirty_metadata(handle, NULL, group_desc_bh)'", __func__); // test code
+    err = pxt4_handle_dirty_metadata(handle, NULL, group_desc_bh);
+	
+    if (err) {
+        printk("[%s]: 86\n", __func__); // test code
 		pxt4_std_error(sb, err);
 		goto out;
 	}
+    printk("[%s]: 87\n", __func__); // test code
 
 	percpu_counter_dec(&sbi->s_freeinodes_counter);
-	if (S_ISDIR(mode))
+	if (S_ISDIR(mode)) {
+        printk("[%s]: 88\n", __func__); // test code
 		percpu_counter_inc(&sbi->s_dirs_counter);
+    }
+    printk("[%s]: 89\n", __func__); // test code
 
 	if (sbi->s_log_groups_per_flex) {
+        printk("[%s]: 90\n", __func__); // test code
 		flex_group = pxt4_flex_group(sbi, group);
 		atomic_dec(&sbi_array_rcu_deref(sbi, s_flex_groups,
 						flex_group)->free_inodes);
 	}
+    printk("[%s]: 91\n", __func__); // test code
 
 	inode->i_ino = ino + group * PXT4_INODES_PER_GROUP(sb);
 	/* This is the optimal IO size (for stat), not the fs block size */
@@ -1432,25 +1655,33 @@ got:
 	ei->i_last_alloc_group = ~0;
 
 	pxt4_set_inode_flags(inode, true);
-	if (IS_DIRSYNC(inode))
+	if (IS_DIRSYNC(inode)) {
+        printk("[%s]: 92\n", __func__); // test code
 		pxt4_handle_sync(handle);
+    }
 	if (insert_inode_locked(inode) < 0) {
 		/*
 		 * Likely a bitmap corruption causing inode to be allocated
 		 * twice.
 		 */
-		err = -EIO;
+        printk("[%s]: 93\n", __func__); // test code
+		
+        err = -EIO;
 		pxt4_error(sb, "failed to insert inode %lu: doubly allocated?",
 			   inode->i_ino);
 		pxt4_mark_group_bitmap_corrupted(sb, group,
 					PXT4_GROUP_INFO_IBITMAP_CORRUPT);
 		goto out;
 	}
-	inode->i_generation = get_random_u32();
+    printk("[%s]: 94\n", __func__); // test code
+	
+    inode->i_generation = get_random_u32();
 
 	/* Precompute checksum seed for inode metadata */
 	if (pxt4_has_metadata_csum(sb)) {
-		__u32 csum;
+        printk("[%s]: 95\n", __func__); // test code
+		
+        __u32 csum;
 		__le32 inum = cpu_to_le32(inode->i_ino);
 		__le32 gen = cpu_to_le32(inode->i_generation);
 		csum = pxt4_chksum(sbi, sbi->s_csum_seed, (__u8 *)&inum,
@@ -1458,6 +1689,7 @@ got:
 		ei->i_csum_seed = pxt4_chksum(sbi, csum, (__u8 *)&gen,
 					      sizeof(gen));
 	}
+    printk("[%s]: 96\n", __func__); // test code
 
 	pxt4_clear_state_flags(ei); /* Only relevant on 32-bit archs */
 	pxt4_set_inode_state(inode, PXT4_STATE_NEW);
@@ -1465,12 +1697,20 @@ got:
 	ei->i_extra_isize = sbi->s_want_extra_isize;
 	ei->i_inline_off = 0;
 	if (pxt4_has_feature_inline_data(sb) &&
-	    (!(ei->i_flags & PXT4_DAX_FL) || S_ISDIR(mode)))
-		pxt4_set_inode_state(inode, PXT4_STATE_MAY_INLINE_DATA);
+	    (!(ei->i_flags & PXT4_DAX_FL) || S_ISDIR(mode))) {
+        
+        printk("[%s]: 97\n", __func__); // test code
+		
+        pxt4_set_inode_state(inode, PXT4_STATE_MAY_INLINE_DATA);
+    }
+    printk("[%s]: 98\n", __func__); // test code
 	ret = inode;
 	err = dquot_alloc_inode(inode);
-	if (err)
+	if (err) {
+        printk("[%s]: 99\n", __func__); // test code
 		goto fail_drop;
+    }
+    printk("[%s]: 100\n", __func__); // test code
 
 	/*
 	 * Since the encryption xattr will always be unique, create it first so
@@ -1478,39 +1718,59 @@ got:
 	 * prevent its deduplication.
 	 */
 	if (encrypt) {
+        printk("[%s]: 101\n", __func__); // test code
 		err = fscrypt_set_context(inode, handle);
-		if (err)
+		if (err) {
+            printk("[%s]: 102\n", __func__); // test code
 			goto fail_free_drop;
+        }
 	}
+    printk("[%s]: 103\n", __func__); // test code
 
 	if (!(ei->i_flags & PXT4_EA_INODE_FL)) {
-		err = pxt4_init_acl(handle, inode, dir);
-		if (err)
+        printk("[%s]: 104\n", __func__); // test code
+		
+        err = pxt4_init_acl(handle, inode, dir);
+		if (err) {
+            printk("[%s]: 105\n", __func__); // test code
 			goto fail_free_drop;
+        }
+        printk("[%s]: 106\n", __func__); // test code
 
 		err = pxt4_init_security(handle, inode, dir, qstr);
-		if (err)
+		if (err) {
+            printk("[%s]: 107\n", __func__); // test code
 			goto fail_free_drop;
+        }
 	}
+    printk("[%s]: 108\n", __func__); // test code
 
 	if (pxt4_has_feature_extents(sb)) {
+        printk("[%s]: 109\n", __func__); // test code
 		/* set extent flag only for directory, file and normal symlink*/
 		if (S_ISDIR(mode) || S_ISREG(mode) || S_ISLNK(mode)) {
-			pxt4_set_inode_flag(inode, PXT4_INODE_EXTENTS);
+            printk("[%s]: 110\n", __func__); // test code
+			
+            pxt4_set_inode_flag(inode, PXT4_INODE_EXTENTS);
 			pxt4_ext_tree_init(handle, inode);
 		}
 	}
+    printk("[%s]: 111\n", __func__); // test code
 
 	if (pxt4_handle_valid(handle)) {
+        printk("[%s]: 112\n", __func__); // test code
 		ei->i_sync_tid = handle->h_transaction->t_tid;
 		ei->i_datasync_tid = handle->h_transaction->t_tid;
 	}
+    printk("[%s]: 113\n", __func__); // test code
 
 	err = pxt4_mark_inode_dirty(handle, inode);
 	if (err) {
+        printk("[%s]: 114\n", __func__); // test code
 		pxt4_std_error(sb, err);
 		goto fail_free_drop;
 	}
+    printk("[%s]: 115\n", __func__); // test code
 
 	pxt4_debug("allocating inode %lu\n", inode->i_ino);
 	trace_pxt4_allocate_inode(inode, dir, mode);
@@ -1518,12 +1778,23 @@ got:
 	return ret;
 
 fail_free_drop:
-	dquot_free_inode(inode);
+
+    printk("[%s]: 116\n", __func__); // test code
+	
+    dquot_free_inode(inode);
+
 fail_drop:
-	clear_nlink(inode);
+    
+    printk("[%s]: 117\n", __func__); // test code
+	
+    clear_nlink(inode);
 	unlock_new_inode(inode);
+
 out:
-	dquot_drop(inode);
+    
+    printk("[%s]: 118\n", __func__); // test code
+	
+    dquot_drop(inode);
 	inode->i_flags |= S_NOQUOTA;
 	iput(inode);
 	brelse(inode_bitmap_bh);
