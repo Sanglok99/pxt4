@@ -668,29 +668,39 @@ void my_xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
     struct xa_node *node = xas->xa_node;
     unsigned int offset = xas->xa_offset;
 
-    // printk("[%s]: 0\n", __func__); // test code
+    printk("[%s]: XA_MAX_MARKS=%d\n", __func__, XA_MAX_MARKS); // test code
+    printk("[%s]: XA_MARK_LONGS=%lu\n", __func__, XA_MARK_LONGS); // test code
+    printk("[%s]: mark=%u\n", __func__, mark); // test code
+    printk("[%s]: node->marks[mark][0]=%lu\n", __func__, node->marks[mark][0]); // test code
+
+    printk("[%s]: 0\n", __func__); // test code
     printk("[%s]: xas->xa_offset = %u\n", __func__, xas->xa_offset); // test code
 
     if (xas_invalid(xas)) {
-        // printk("[%s]: 1\n", __func__); // test code
+        printk("[%s]: 1\n", __func__); // test code
         return;
     }
-    // printk("[%s]: 2\n", __func__); // test code
+    printk("[%s]: 2\n", __func__); // test code
 
     while (node) {
-        // printk("[%s]: 3\n", __func__); // test code
+        printk("[%s]: 3\n", __func__); // test code
         if (node_set_mark(node, offset, mark)) {
-            // printk("[%s]: 4\n", __func__); // test code
+            printk("[%s]: 4\n", __func__); // test code
             return;
         }
-        // printk("[%s]: 5\n", __func__); // test code
+        printk("[%s]: xas->xa_offset = %u\n", __func__, xas->xa_offset); // test code
+        printk("[%s]: offset = %u\n", __func__, offset); // test code
+        printk("[%s]: node->marks[mark][0]=%lu\n", __func__, node->marks[mark][0]); // test code
+        
+        printk("[%s]: 5\n", __func__); // test code
+        
         offset = node->offset;
         node = xa_parent_locked(xas->xa, node);
     }
-    // printk("[%s]: 6\n", __func__); // test code
+    printk("[%s]: 6\n", __func__); // test code
 
     if (!xa_marked(xas->xa, mark)) {
-        // printk("[%s]: 7\n", __func__); // test code
+        printk("[%s]: 7\n", __func__); // test code
         xa_mark_set(xas->xa, mark);
     }
 }
@@ -1105,6 +1115,17 @@ void __my_mark_inode_dirty(struct inode *inode, int flags)
              * to make sure background write-back happens
              * later.
              */
+
+            // === test code begin ===
+            if(wb->bdi) {
+                printk("[%s]: wb->bdi->capabilities= %u\n", __func__, wb->bdi->capabilities);
+            } else {
+                printk("[%s]: wb->bdi is NULL\n", __func__);
+            }
+            // === test code end ===
+
+            printk("[%s]: BDI_CAP_WRITEBACK= %d\n", __func__, BDI_CAP_WRITEBACK); // test code
+
             if (wakeup_bdi &&
                 (wb->bdi->capabilities & BDI_CAP_WRITEBACK)) {
                 printk("[%s]: 28\n", __func__); // test code
