@@ -43,6 +43,7 @@
 
 #include "internal.h"
 #include "buffer_head.h"
+#include "../mm/backing-dev.h"
 
 extern void check_irqs_on(void);
 extern void link_dev_buffers(struct folio *folio, struct buffer_head *head);
@@ -1129,7 +1130,7 @@ void __my_mark_inode_dirty(struct inode *inode, int flags)
             if (wakeup_bdi &&
                 (wb->bdi->capabilities & BDI_CAP_WRITEBACK)) {
                 printk("[%s]: 28\n", __func__); // test code
-                wb_wakeup_delayed(wb);
+                my_wb_wakeup_delayed(wb);
             }
             
             printk("[%s]: 29\n", __func__); // test code
