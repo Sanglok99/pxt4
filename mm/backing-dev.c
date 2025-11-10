@@ -34,6 +34,7 @@ static inline bool my_queue_delayed_work(struct workqueue_struct *wq,
                       struct delayed_work *dwork,
                       unsigned long delay)
 {
+    printk("[%s]: WORK_CPU_UNBOUND= %d\n", __func__, WORK_CPU_UNBOUND); // test code
     return my_queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
 }
 
@@ -61,6 +62,6 @@ void my_wb_wakeup_delayed(struct bdi_writeback *wb)
 
     spin_lock_irq(&wb->work_lock);
     if (test_bit(WB_registered, &wb->state))
-        queue_delayed_work(bdi_wq, &wb->dwork, timeout);
+        my_queue_delayed_work(bdi_wq, &wb->dwork, timeout);
     spin_unlock_irq(&wb->work_lock);
 }

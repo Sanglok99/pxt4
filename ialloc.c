@@ -1635,7 +1635,20 @@ got:
 	}
     printk("[%s]: 91\n", __func__); // test code
 
+    // === test code begin ===
+    if(inode->i_ino){
+        printk("[%s]: inode->i_ino(before)= %lu\n", __func__, inode->i_ino);
+    } else if(inode->i_ino == 0) {
+        printk("[%s]: inode->i_ino= %lu\n", __func__, inode->i_ino);
+    } else {
+        printk("[%s]: inode->i_ino is NULL\n", __func__);
+    }   
+    // === test code end ===
+
 	inode->i_ino = ino + group * PXT4_INODES_PER_GROUP(sb);
+ 
+    printk("[%s]: inode->i_ino(after)= %lu\n", __func__, inode->i_ino); // test code
+
 	/* This is the optimal IO size (for stat), not the fs block size */
 	inode->i_blocks = 0;
 	inode->i_mtime = inode->i_atime = inode_set_ctime_current(inode);

@@ -733,19 +733,28 @@ static void __my_queue_delayed_work(int cpu, struct workqueue_struct *wq,
      * expire is on the closest next tick and delayed_work users depend
      * on that there's no such delay when @delay is 0.
      */
+    printk("[%s]: 0\n", __func__); // test code 
+    
     if (!delay) {
+        printk("[%s]: 1\n", __func__); // test code 
         __my_queue_work(cpu, wq, &dwork->work);
         return;
     }
+    
+    printk("[%s]: 2\n", __func__); // test code 
 
     dwork->wq = wq;
     dwork->cpu = cpu;
     timer->expires = jiffies + delay;
 
-    if (unlikely(cpu != WORK_CPU_UNBOUND))
+    if (unlikely(cpu != WORK_CPU_UNBOUND)) {
+        printk("[%s]: 3\n", __func__); // test code 
         add_timer_on(timer, cpu);
-    else
+    }
+    else {
+        printk("[%s]: 4\n", __func__); // test code 
         add_timer(timer);
+    }
 }
 
 /**
